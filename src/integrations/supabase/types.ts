@@ -14,7 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      academic_databases: {
+        Row: {
+          academic_year: string
+          batch: string
+          branch: Database["public"]["Enums"]["branch_type"]
+          created_at: string
+          created_by: string | null
+          id: string
+          semester: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year: string
+          batch: string
+          branch: Database["public"]["Enums"]["branch_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          semester: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          batch?: string
+          branch?: Database["public"]["Enums"]["branch_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          semester?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          academic_database_id: string
+          created_at: string
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          seat_number: number
+          student_name: string
+          subject1_sem_marks: number | null
+          subject1_unit_test: number | null
+          subject2_sem_marks: number | null
+          subject2_unit_test: number | null
+          subject3_sem_marks: number | null
+          subject3_unit_test: number | null
+          subject4_sem_marks: number | null
+          subject4_unit_test: number | null
+          subject5_sem_marks: number | null
+          subject5_unit_test: number | null
+          total_cgpa: number | null
+          updated_at: string
+        }
+        Insert: {
+          academic_database_id: string
+          created_at?: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          seat_number: number
+          student_name: string
+          subject1_sem_marks?: number | null
+          subject1_unit_test?: number | null
+          subject2_sem_marks?: number | null
+          subject2_unit_test?: number | null
+          subject3_sem_marks?: number | null
+          subject3_unit_test?: number | null
+          subject4_sem_marks?: number | null
+          subject4_unit_test?: number | null
+          subject5_sem_marks?: number | null
+          subject5_unit_test?: number | null
+          total_cgpa?: number | null
+          updated_at?: string
+        }
+        Update: {
+          academic_database_id?: string
+          created_at?: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          seat_number?: number
+          student_name?: string
+          subject1_sem_marks?: number | null
+          subject1_unit_test?: number | null
+          subject2_sem_marks?: number | null
+          subject2_unit_test?: number | null
+          subject3_sem_marks?: number | null
+          subject3_unit_test?: number | null
+          subject4_sem_marks?: number | null
+          subject4_unit_test?: number | null
+          subject5_sem_marks?: number | null
+          subject5_unit_test?: number | null
+          total_cgpa?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_academic_database_id_fkey"
+            columns: ["academic_database_id"]
+            isOneToOne: false
+            referencedRelation: "academic_databases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +153,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      branch_type:
+        | "Computer Eng."
+        | "Electronics and Telecom"
+        | "Information Technology"
+        | "Electronics and Computer Science"
+        | "Electrical"
+      gender_type: "Male" | "Female" | "Other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +286,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      branch_type: [
+        "Computer Eng.",
+        "Electronics and Telecom",
+        "Information Technology",
+        "Electronics and Computer Science",
+        "Electrical",
+      ],
+      gender_type: ["Male", "Female", "Other"],
+    },
   },
 } as const
