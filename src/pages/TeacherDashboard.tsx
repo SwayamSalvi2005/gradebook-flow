@@ -37,7 +37,9 @@ const branches: BranchType[] = [
 
 interface AcademicDatabase {
   id: string;
-  academic_year: string;
+  database_name: string;
+  graduation_year: string;
+  year_classification: string;
   semester: number;
   branch: string;
   batch: string;
@@ -51,7 +53,9 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [createDbOpen, setCreateDbOpen] = useState(false);
   const [formData, setFormData] = useState({
-    academicYear: '',
+    databaseName: '',
+    graduationYear: '',
+    yearClassification: '',
     semester: '',
     branch: '' as BranchType | '',
     batch: ''
@@ -90,7 +94,9 @@ const TeacherDashboard = () => {
       .from('academic_databases')
       .insert([
         {
-          academic_year: formData.academicYear,
+          database_name: formData.databaseName,
+          graduation_year: formData.graduationYear,
+          year_classification: formData.yearClassification,
           semester: parseInt(formData.semester),
           branch: formData.branch as BranchType,
           batch: formData.batch,
@@ -110,7 +116,7 @@ const TeacherDashboard = () => {
         description: "Academic database created successfully!",
       });
       setCreateDbOpen(false);
-      setFormData({ academicYear: '', semester: '', branch: '', batch: '' });
+      setFormData({ databaseName: '', graduationYear: '', yearClassification: '', semester: '', branch: '', batch: '' });
       fetchDatabases();
     }
 
@@ -139,12 +145,6 @@ const TeacherDashboard = () => {
     navigate(`/analysis/${databaseId}`);
   };
 
-  const handleBulkUpload = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Bulk upload functionality will be available soon!",
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,66 +190,94 @@ const TeacherDashboard = () => {
                     Set up a new database for managing student records
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleCreateDatabase} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="academicYear">Academic Year</Label>
-                    <Input
-                      id="academicYear"
-                      placeholder="e.g., 2024-2025"
-                      value={formData.academicYear}
-                      onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-                      required
-                    />
-                  </div>
+                  <form onSubmit={handleCreateDatabase} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="databaseName">Database Name</Label>
+                      <Input
+                        id="databaseName"
+                        placeholder="e.g., Final Semester Database"
+                        value={formData.databaseName}
+                        onChange={(e) => setFormData({ ...formData, databaseName: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="semester">Semester</Label>
-                    <Select
-                      value={formData.semester}
-                      onValueChange={(value) => setFormData({ ...formData, semester: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select semester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6].map((sem) => (
-                          <SelectItem key={sem} value={sem.toString()}>
-                            Semester {sem}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="graduationYear">Graduation Year</Label>
+                      <Input
+                        id="graduationYear"
+                        placeholder="e.g., 2027"
+                        value={formData.graduationYear}
+                        onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="branch">Branch</Label>
-                    <Select
-                      value={formData.branch}
-                      onValueChange={(value) => setFormData({ ...formData, branch: value as BranchType })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select branch" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {branches.map((branch) => (
-                          <SelectItem key={branch} value={branch}>
-                            {branch}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="yearClassification">Year Classification</Label>
+                      <Select
+                        value={formData.yearClassification}
+                        onValueChange={(value) => setFormData({ ...formData, yearClassification: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1st Year">1st Year</SelectItem>
+                          <SelectItem value="2nd Year">2nd Year</SelectItem>
+                          <SelectItem value="3rd Year">3rd Year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="batch">Batch</Label>
-                    <Input
-                      id="batch"
-                      placeholder="e.g., 2024"
-                      value={formData.batch}
-                      onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                      required
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="semester">Semester</Label>
+                      <Select
+                        value={formData.semester}
+                        onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select semester" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6].map((sem) => (
+                            <SelectItem key={sem} value={sem.toString()}>
+                              Semester {sem}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="branch">Branch</Label>
+                      <Select
+                        value={formData.branch}
+                        onValueChange={(value) => setFormData({ ...formData, branch: value as BranchType })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {branches.map((branch) => (
+                            <SelectItem key={branch} value={branch}>
+                              {branch}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="batch">Batch Range</Label>
+                      <Input
+                        id="batch"
+                        placeholder="e.g., 2023-2027"
+                        value={formData.batch}
+                        onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
+                        required
+                      />
+                    </div>
 
                   <div className="flex justify-end space-x-2">
                     <Button type="button" variant="outline" onClick={() => setCreateDbOpen(false)}>
@@ -284,13 +312,17 @@ const TeacherDashboard = () => {
                 <Card key={db.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between">
-                      <span className="truncate">{db.academic_year}</span>
+                      <span className="truncate">{db.database_name}</span>
                       <Badge variant="secondary">{db.branch.split(' ')[0]}</Badge>
                     </CardTitle>
                     <CardDescription className="space-y-1">
                       <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {db.graduation_year} • {db.year_classification}
+                      </div>
+                      <div className="flex items-center">
                         <GraduationCap className="mr-2 h-4 w-4" />
-                        {getSemesterYear(db.semester)} - Semester {db.semester}
+                        Semester {db.semester}
                       </div>
                       <div className="flex items-center">
                         <Building className="mr-2 h-4 w-4" />
@@ -327,25 +359,7 @@ const TeacherDashboard = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BookOpen className="mr-2 h-5 w-5 text-primary" />
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" onClick={handleBulkUpload}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Bulk Upload Students
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Download className="mr-2 h-4 w-4" />
-                  Export Reports
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <Card>
               <CardHeader>

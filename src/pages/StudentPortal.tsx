@@ -22,20 +22,23 @@ const branches: BranchType[] = [
 const StudentPortal = () => {
   const [formData, setFormData] = useState({
     branch: '' as BranchType | '',
-    academicYear: '',
+    graduationYear: '',
+    yearClassification: '',
+    semester: '',
     seatNumber: ''
   });
   const [student, setStudent] = useState<any>(null);
+  const [database, setDatabase] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!formData.branch) {
+    if (!formData.branch || !formData.graduationYear || !formData.yearClassification || !formData.semester) {
       toast({
         title: "Validation Error",
-        description: "Please select a branch.",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       setLoading(false);
@@ -46,9 +49,11 @@ const StudentPortal = () => {
       // First get the academic database
       const { data: academicDb, error: dbError } = await supabase
         .from('academic_databases')
-        .select('id')
+        .select('*')
         .eq('branch', formData.branch as BranchType)
-        .eq('academic_year', formData.academicYear)
+        .eq('graduation_year', formData.graduationYear)
+        .eq('year_classification', formData.yearClassification)
+        .eq('semester', parseInt(formData.semester))
         .single();
 
       if (dbError || !academicDb) {
@@ -77,6 +82,7 @@ const StudentPortal = () => {
         });
       } else {
         setStudent(studentData);
+        setDatabase(academicDb);
         toast({
           title: "Record Found",
           description: "Student record retrieved successfully!",
@@ -135,7 +141,7 @@ const StudentPortal = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="branch">Branch</Label>
                     <Select
@@ -156,14 +162,50 @@ const StudentPortal = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="academicYear">Academic Year</Label>
+                    <Label htmlFor="graduationYear">Graduation Year</Label>
                     <Input
-                      id="academicYear"
-                      placeholder="e.g., 2024-2025"
-                      value={formData.academicYear}
-                      onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                      id="graduationYear"
+                      placeholder="e.g., 2027"
+                      value={formData.graduationYear}
+                      onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="yearClassification">Year</Label>
+                    <Select
+                      value={formData.yearClassification}
+                      onValueChange={(value) => setFormData({ ...formData, yearClassification: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1st Year">1st Year</SelectItem>
+                        <SelectItem value="2nd Year">2nd Year</SelectItem>
+                        <SelectItem value="3rd Year">3rd Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="semester">Semester</Label>
+                    <Select
+                      value={formData.semester}
+                      onValueChange={(value) => setFormData({ ...formData, semester: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6].map((sem) => (
+                          <SelectItem key={sem} value={sem.toString()}>
+                            {sem}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -171,7 +213,7 @@ const StudentPortal = () => {
                     <Input
                       id="seatNumber"
                       type="number"
-                      placeholder="5-digit seat number"
+                      placeholder="5-digit"
                       min="10000"
                       max="99999"
                       value={formData.seatNumber}
@@ -217,7 +259,16 @@ const StudentPortal = () => {
                     <strong>Branch:</strong> {formData.branch}
                   </div>
                   <div>
-                    <strong>Academic Year:</strong> {formData.academicYear}
+                    <strong>Database:</strong> {database?.database_name}
+                  </div>
+                  <div>
+                    <strong>Graduation Year:</strong> {formData.graduationYear}
+                  </div>
+                  <div>
+                    <strong>Year:</strong> {formData.yearClassification}
+                  </div>
+                  <div>
+                    <strong>Semester:</strong> {formData.semester}
                   </div>
                   {student.gender && (
                     <div>

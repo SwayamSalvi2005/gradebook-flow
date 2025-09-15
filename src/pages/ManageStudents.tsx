@@ -46,7 +46,9 @@ interface Student {
 
 interface AcademicDatabase {
   id: string;
-  academic_year: string;
+  database_name: string;
+  graduation_year: string;
+  year_classification: string;
   semester: number;
   branch: string;
   batch: string;
@@ -60,6 +62,7 @@ const ManageStudents = () => {
   const [loading, setLoading] = useState(false);
   const [addStudentOpen, setAddStudentOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [studentForm, setStudentForm] = useState({
     seat_number: '',
     student_name: '',
@@ -267,6 +270,69 @@ const ManageStudents = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleBulkUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const csvData = e.target?.result as string;
+      const lines = csvData.split('\n');
+      const headers = lines[0].split(',');
+      
+      // Skip header row
+      const students = lines.slice(1).filter(line => line.trim()).map(line => {
+        const values = line.split(',');
+        return {
+          seat_number: parseInt(values[0]),
+          student_name: values[1]?.trim(),
+          gender: values[2]?.trim() || null,
+          subject1_unit_test: parseInt(values[3]) || 0,
+          subject1_sem_marks: parseInt(values[4]) || 0,
+          subject2_unit_test: parseInt(values[5]) || 0,
+          subject2_sem_marks: parseInt(values[6]) || 0,
+          subject3_unit_test: parseInt(values[7]) || 0,
+          subject3_sem_marks: parseInt(values[8]) || 0,
+          subject4_unit_test: parseInt(values[9]) || 0,
+          subject4_sem_marks: parseInt(values[10]) || 0,
+          subject5_unit_test: parseInt(values[11]) || 0,
+          subject5_sem_marks: parseInt(values[12]) || 0,
+          total_cgpa: parseFloat(values[13]) || 0,
+          academic_database_id: databaseId
+        };
+      });
+
+      try {
+        const { error } = await supabase
+          .from('students')
+          .insert(students);
+
+        if (error) {
+          toast({
+            title: "Upload Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Upload Successful",
+            description: `${students.length} students uploaded successfully!`,
+          });
+          setUploadOpen(false);
+          fetchStudents();
+        }
+      } catch (error) {
+        toast({
+          title: "Upload Failed",
+          description: "An error occurred during upload.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
   const calculateTotal = (student: Student) => {
     return student.subject1_unit_test + student.subject1_sem_marks +
            student.subject2_unit_test + student.subject2_sem_marks +
@@ -294,8 +360,10 @@ const ManageStudents = () => {
             <div>
               <h1 className="text-3xl font-bold">Manage Students</h1>
               <div className="flex items-center space-x-4 text-muted-foreground">
-                <span>{database.academic_year}</span>
-                <Badge variant="secondary">Semester {database.semester}</Badge>
+                <span>{database.database_name}</span>
+                <Badge variant="secondary">{database.graduation_year}</Badge>
+                <span>{database.year_classification}</span>
+                <Badge variant="outline">Semester {database.semester}</Badge>
                 <span>{database.branch}</span>
                 <span>Batch {database.batch}</span>
               </div>
@@ -306,10 +374,38 @@ const ManageStudents = () => {
                 <Download className="mr-2 h-4 w-4" />
                 Download Template
               </Button>
-              <Button variant="outline" size="sm">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Students
-              </Button>
+              <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Students
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Bulk Upload Students</DialogTitle>
+                    <DialogDescription>
+                      Upload a CSV file to add multiple students at once
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>CSV File</Label>
+                      <Input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleBulkUpload}
+                      />
+                    </div>
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Please ensure your CSV file follows the template format. Download the template first if needed.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Dialog open={addStudentOpen} onOpenChange={setAddStudentOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={resetForm}>

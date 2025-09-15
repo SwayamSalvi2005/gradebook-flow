@@ -14,7 +14,8 @@ import {
   TrendingUp,
   BarChart3,
   PieChart,
-  Target
+  Target,
+  Download
 } from 'lucide-react';
 
 interface Student {
@@ -37,7 +38,9 @@ interface Student {
 
 interface AcademicDatabase {
   id: string;
-  academic_year: string;
+  database_name: string;
+  graduation_year: string;
+  year_classification: string;
   semester: number;
   branch: string;
   batch: string;
@@ -50,10 +53,10 @@ interface AnalyticsData {
   otherGender: number;
   passedStudents: number;
   failedStudents: number;
-  topper: Student | null;
+  toppers: Student[];
   averageCGPA: number;
-  highestTotal: number;
-  lowestTotal: number;
+  highestCGPA: number;
+  lowestCGPA: number;
 }
 
 const Analysis = () => {
@@ -142,10 +145,10 @@ const Analysis = () => {
         otherGender: 0,
         passedStudents: 0,
         failedStudents: 0,
-        topper: null,
+        toppers: [],
         averageCGPA: 0,
-        highestTotal: 0,
-        lowestTotal: 0
+        highestCGPA: 0,
+        lowestCGPA: 0
       });
       return;
     }
@@ -159,16 +162,15 @@ const Analysis = () => {
     const passedStudents = studentsData.filter(s => calculatePercentage(s) >= passThreshold).length;
     const failedStudents = studentsData.length - passedStudents;
 
-    // Find topper (highest CGPA)
-    const topper = studentsData.reduce((max, student) => 
-      student.total_cgpa > (max?.total_cgpa || 0) ? student : max
-    , studentsData[0]);
+    // Find top 3 toppers (highest CGPA)
+    const sortedByCGPA = [...studentsData].sort((a, b) => b.total_cgpa - a.total_cgpa);
+    const highestCGPA = sortedByCGPA[0]?.total_cgpa || 0;
+    const toppers = sortedByCGPA.filter(student => student.total_cgpa === highestCGPA).slice(0, 3);
 
     // Calculate averages and extremes
     const averageCGPA = studentsData.reduce((sum, s) => sum + s.total_cgpa, 0) / studentsData.length;
-    const totals = studentsData.map(calculateTotal);
-    const highestTotal = Math.max(...totals);
-    const lowestTotal = Math.min(...totals);
+    const cgpaValues = studentsData.map(s => s.total_cgpa);
+    const lowestCGPA = Math.min(...cgpaValues);
 
     setAnalytics({
       totalStudents: studentsData.length,
@@ -177,10 +179,10 @@ const Analysis = () => {
       otherGender,
       passedStudents,
       failedStudents,
-      topper,
+      toppers,
       averageCGPA,
-      highestTotal,
-      lowestTotal
+      highestCGPA,
+      lowestCGPA
     });
   };
 
@@ -196,6 +198,34 @@ const Analysis = () => {
 
   const passPercentage = analytics.totalStudents > 0 ? 
     ((analytics.passedStudents / analytics.totalStudents) * 100).toFixed(1) : '0';
+
+  const exportToPDF = async () => {
+    const { jsPDF } = await import('jspdf');
+    const doc = new jsPDF();
+    
+    doc.setFontSize(16);
+    doc.text('Analytics Report', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.text(`Database: ${database?.database_name}`, 20, 35);
+    doc.text(`Branch: ${database?.branch}`, 20, 45);
+    doc.text(`Year: ${database?.year_classification}`, 20, 55);
+    doc.text(`Semester: ${database?.semester}`, 20, 65);
+    
+    doc.text(`Total Students: ${analytics.totalStudents}`, 20, 85);
+    doc.text(`Pass Rate: ${passPercentage}%`, 20, 95);
+    doc.text(`Average CGPA: ${analytics.averageCGPA.toFixed(2)}`, 20, 105);
+    doc.text(`Highest CGPA: ${analytics.highestCGPA}`, 20, 115);
+    
+    if (analytics.toppers.length > 0) {
+      doc.text('Top Performers:', 20, 135);
+      analytics.toppers.forEach((topper, index) => {
+        doc.text(`${index + 1}. ${topper.student_name} - CGPA: ${topper.total_cgpa}`, 25, 145 + (index * 10));
+      });
+    }
+    
+    doc.save('analytics-report.pdf');
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -215,12 +245,19 @@ const Analysis = () => {
                 Analytics Dashboard
               </h1>
               <div className="flex items-center space-x-4 text-muted-foreground mt-2">
-                <span>{database.academic_year}</span>
-                <Badge variant="secondary">Semester {database.semester}</Badge>
+                <span>{database.database_name}</span>
+                <Badge variant="secondary">{database.graduation_year}</Badge>
+                <span>{database.year_classification}</span>
+                <Badge variant="outline">Semester {database.semester}</Badge>
                 <span>{database.branch}</span>
                 <span>Batch {database.batch}</span>
               </div>
             </div>
+            
+            <Button onClick={exportToPDF} className="gap-2">
+              <Download className="h-4 w-4" />
+              Export PDF Report
+            </Button>
           </div>
 
           {analytics.totalStudents === 0 ? (
@@ -274,54 +311,49 @@ const Analysis = () => {
 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Highest Score</CardTitle>
+                    <CardTitle className="text-sm font-medium">Highest CGPA</CardTitle>
                     <Trophy className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{analytics.highestTotal}</div>
-                    <p className="text-xs text-muted-foreground">Out of 550 marks</p>
+                    <div className="text-2xl font-bold">{analytics.highestCGPA}</div>
+                    <p className="text-xs text-muted-foreground">Top performer</p>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Detailed Analytics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Topper Information */}
-                {analytics.topper && (
+                {/* Top 3 Toppers */}
+                {analytics.toppers.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         <Trophy className="mr-2 h-5 w-5 text-yellow-500" />
-                        Class Topper
+                        Top 3 Performers
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-lg">{analytics.topper.student_name}</div>
-                          <div className="text-muted-foreground">Seat No: {analytics.topper.seat_number}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-primary">{analytics.topper.total_cgpa}</div>
-                          <div className="text-sm text-muted-foreground">CGPA</div>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>Total Marks:</span>
-                          <span className="font-medium">{calculateTotal(analytics.topper)}/550</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Percentage:</span>
-                          <span className="font-medium">{calculatePercentage(analytics.topper).toFixed(1)}%</span>
-                        </div>
-                        {analytics.topper.gender && (
-                          <div className="flex justify-between text-sm">
-                            <span>Gender:</span>
-                            <span className="font-medium">{analytics.topper.gender}</span>
+                      {analytics.toppers.slice(0, 3).map((topper, index) => (
+                        <div key={topper.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                              index === 1 ? 'bg-gray-100 text-gray-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="font-medium">{topper.student_name}</div>
+                              <div className="text-sm text-muted-foreground">Seat No: {topper.seat_number}</div>
+                            </div>
                           </div>
-                        )}
-                      </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-primary">{topper.total_cgpa}</div>
+                            <div className="text-xs text-muted-foreground">CGPA</div>
+                          </div>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 )}
