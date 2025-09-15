@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { 
   Plus, 
   LogOut, 
@@ -46,6 +46,7 @@ interface AcademicDatabase {
 
 const TeacherDashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [databases, setDatabases] = useState<AcademicDatabase[]>([]);
   const [loading, setLoading] = useState(false);
   const [createDbOpen, setCreateDbOpen] = useState(false);
@@ -121,6 +122,27 @@ const TeacherDashboard = () => {
     toast({
       title: "Signed Out",
       description: "You have been signed out successfully.",
+    });
+  };
+
+  const getSemesterYear = (semester: number) => {
+    if (semester <= 2) return '1st Year';
+    if (semester <= 4) return '2nd Year';
+    return '3rd Year';
+  };
+
+  const handleManageStudents = (databaseId: string) => {
+    navigate(`/manage-students/${databaseId}`);
+  };
+
+  const handleAnalysis = (databaseId: string) => {
+    navigate(`/analysis/${databaseId}`);
+  };
+
+  const handleBulkUpload = () => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Bulk upload functionality will be available soon!",
     });
   };
 
@@ -259,7 +281,7 @@ const TeacherDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {databases.map((db) => (
-                <Card key={db.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card key={db.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center justify-between">
                       <span className="truncate">{db.academic_year}</span>
@@ -267,8 +289,8 @@ const TeacherDashboard = () => {
                     </CardTitle>
                     <CardDescription className="space-y-1">
                       <div className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Semester {db.semester}
+                        <GraduationCap className="mr-2 h-4 w-4" />
+                        {getSemesterYear(db.semester)} - Semester {db.semester}
                       </div>
                       <div className="flex items-center">
                         <Building className="mr-2 h-4 w-4" />
@@ -286,7 +308,7 @@ const TeacherDashboard = () => {
                       <Button 
                         size="sm" 
                         className="flex-1"
-                        onClick={() => window.location.href = `/manage-students/${db.id}`}
+                        onClick={() => handleManageStudents(db.id)}
                       >
                         <Users className="mr-2 h-4 w-4" />
                         Manage Students
@@ -294,7 +316,7 @@ const TeacherDashboard = () => {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => window.location.href = `/analysis/${db.id}`}
+                        onClick={() => handleAnalysis(db.id)}
                       >
                         <BarChart3 className="h-4 w-4" />
                       </Button>
@@ -314,7 +336,7 @@ const TeacherDashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleBulkUpload}>
                   <Upload className="mr-2 h-4 w-4" />
                   Bulk Upload Students
                 </Button>
