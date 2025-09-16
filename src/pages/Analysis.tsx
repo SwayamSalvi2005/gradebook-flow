@@ -17,6 +17,7 @@ import {
   Target,
   Download
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Student {
   id: string;
@@ -462,39 +463,35 @@ const Analysis = () => {
                   </CardContent>
                 </Card>
 
-                {/* Score Range Analysis */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-                      Score Range
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Highest Total:</span>
-                        <span className="font-medium">{analytics.highestTotal}/550</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Lowest Total:</span>
-                        <span className="font-medium">{analytics.lowestTotal}/550</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Score Range:</span>
-                        <span className="font-medium">{analytics.highestTotal - analytics.lowestTotal} marks</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Highest Percentage:</span>
-                        <span className="font-medium">{((analytics.highestTotal / 550) * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Lowest Percentage:</span>
-                        <span className="font-medium">{((analytics.lowestTotal / 550) * 100).toFixed(1)}%</span>
-                      </div>
+              {/* CGPA Range Analysis */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="mr-2 h-5 w-5 text-primary" />
+                    CGPA Range
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Highest CGPA:</span>
+                      <span className="font-medium">{analytics.highestCGPA}</span>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex justify-between">
+                      <span>Lowest CGPA:</span>
+                      <span className="font-medium">{analytics.lowestCGPA}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>CGPA Range:</span>
+                      <span className="font-medium">{(analytics.highestCGPA - analytics.lowestCGPA).toFixed(2)} points</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Average CGPA:</span>
+                      <span className="font-medium">{analytics.averageCGPA.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               </div>
             </>
           )}

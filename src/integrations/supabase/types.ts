@@ -16,34 +16,40 @@ export type Database = {
     Tables: {
       academic_databases: {
         Row: {
-          academic_year: string
           batch: string
           branch: Database["public"]["Enums"]["branch_type"]
           created_at: string
           created_by: string | null
+          database_name: string
+          graduation_year: string
           id: string
           semester: number
           updated_at: string
+          year_classification: string
         }
         Insert: {
-          academic_year: string
           batch: string
           branch: Database["public"]["Enums"]["branch_type"]
           created_at?: string
           created_by?: string | null
+          database_name: string
+          graduation_year: string
           id?: string
           semester: number
           updated_at?: string
+          year_classification: string
         }
         Update: {
-          academic_year?: string
           batch?: string
           branch?: Database["public"]["Enums"]["branch_type"]
           created_at?: string
           created_by?: string | null
+          database_name?: string
+          graduation_year?: string
           id?: string
           semester?: number
           updated_at?: string
+          year_classification?: string
         }
         Relationships: []
       }

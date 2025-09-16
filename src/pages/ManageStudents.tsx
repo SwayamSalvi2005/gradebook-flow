@@ -305,7 +305,12 @@ const ManageStudents = () => {
       try {
         const { error } = await supabase
           .from('students')
-          .insert(students);
+          .insert(students.map(student => ({
+            ...student,
+            gender: student.gender && ['Male', 'Female', 'Other'].includes(student.gender) 
+              ? student.gender as 'Male' | 'Female' | 'Other'
+              : null
+          })));
 
         if (error) {
           toast({
