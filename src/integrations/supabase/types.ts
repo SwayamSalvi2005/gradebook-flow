@@ -86,6 +86,7 @@ export type Database = {
           created_at: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
+          roll_no: string | null
           seat_number: number
           student_name: string
           subject1_sem_marks: number | null
@@ -106,6 +107,7 @@ export type Database = {
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          roll_no?: string | null
           seat_number: number
           student_name: string
           subject1_sem_marks?: number | null
@@ -126,6 +128,7 @@ export type Database = {
           created_at?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          roll_no?: string | null
           seat_number?: number
           student_name?: string
           subject1_sem_marks?: number | null
