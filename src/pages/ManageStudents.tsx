@@ -3,34 +3,20 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { 
-  ArrowLeft, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Upload, 
-  Download,
-  User,
-  BookOpen,
-  FileSpreadsheet,
-  AlertCircle
-} from 'lucide-react';
-
-type GenderType = 'Male' | 'Female' | 'Other';
+import { ArrowLeft, Plus, Upload } from 'lucide-react';
+import { StudentList } from '@/components/StudentList';
+import { BulkUploadPreview } from '@/components/BulkUploadPreview';
+import { StudentForm } from '@/components/StudentForm';
 
 interface Student {
   id: string;
   seat_number: number;
+  roll_no?: string;
   student_name: string;
-  gender?: GenderType;
+  gender?: string;
   subject1_unit_test: number;
   subject1_sem_marks: number;
   subject2_unit_test: number;
@@ -59,26 +45,9 @@ const ManageStudents = () => {
   const { databaseId } = useParams();
   const [database, setDatabase] = useState<AcademicDatabase | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [addStudentOpen, setAddStudentOpen] = useState(false);
+  const [studentFormOpen, setStudentFormOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [studentForm, setStudentForm] = useState({
-    seat_number: '',
-    student_name: '',
-    gender: '' as GenderType | '',
-    subject1_unit_test: 0,
-    subject1_sem_marks: 0,
-    subject2_unit_test: 0,
-    subject2_sem_marks: 0,
-    subject3_unit_test: 0,
-    subject3_sem_marks: 0,
-    subject4_unit_test: 0,
-    subject4_sem_marks: 0,
-    subject5_unit_test: 0,
-    subject5_sem_marks: 0,
-    total_cgpa: 0.00
-  });
 
   if (!user) {
     return <Navigate to="/teacher-auth" replace />;
@@ -114,7 +83,7 @@ const ManageStudents = () => {
       .from('students')
       .select('*')
       .eq('academic_database_id', databaseId)
-      .order('seat_number');
+      .order('roll_no', { ascending: true, nullsFirst: false });
 
     if (error) {
       toast({
@@ -127,91 +96,10 @@ const ManageStudents = () => {
     }
   };
 
-  const resetForm = () => {
-    setStudentForm({
-      seat_number: '',
-      student_name: '',
-      gender: '',
-      subject1_unit_test: 0,
-      subject1_sem_marks: 0,
-      subject2_unit_test: 0,
-      subject2_sem_marks: 0,
-      subject3_unit_test: 0,
-      subject3_sem_marks: 0,
-      subject4_unit_test: 0,
-      subject4_sem_marks: 0,
-      subject5_unit_test: 0,
-      subject5_sem_marks: 0,
-      total_cgpa: 0.00
-    });
+  const handleStudentSave = () => {
+    fetchStudents();
+    setStudentFormOpen(false);
     setEditStudent(null);
-  };
-
-  const handleAddStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const { error } = await supabase
-      .from('students')
-      .insert([
-        {
-          ...studentForm,
-          seat_number: parseInt(studentForm.seat_number),
-          academic_database_id: databaseId,
-          gender: studentForm.gender || null
-        }
-      ]);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Student added successfully!",
-      });
-      setAddStudentOpen(false);
-      resetForm();
-      fetchStudents();
-    }
-
-    setLoading(false);
-  };
-
-  const handleEditStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editStudent) return;
-    
-    setLoading(true);
-
-    const { error } = await supabase
-      .from('students')
-      .update({
-        ...studentForm,
-        seat_number: parseInt(studentForm.seat_number),
-        gender: studentForm.gender || null
-      })
-      .eq('id', editStudent.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Student updated successfully!",
-      });
-      resetForm();
-      fetchStudents();
-    }
-
-    setLoading(false);
   };
 
   const handleDeleteStudent = async (studentId: string) => {
@@ -237,113 +125,13 @@ const ManageStudents = () => {
     }
   };
 
-  const openEditDialog = (student: Student) => {
+  const handleEditStudent = (student: Student) => {
     setEditStudent(student);
-    setStudentForm({
-      seat_number: student.seat_number.toString(),
-      student_name: student.student_name,
-      gender: student.gender || '',
-      subject1_unit_test: student.subject1_unit_test,
-      subject1_sem_marks: student.subject1_sem_marks,
-      subject2_unit_test: student.subject2_unit_test,
-      subject2_sem_marks: student.subject2_sem_marks,
-      subject3_unit_test: student.subject3_unit_test,
-      subject3_sem_marks: student.subject3_sem_marks,
-      subject4_unit_test: student.subject4_unit_test,
-      subject4_sem_marks: student.subject4_sem_marks,
-      subject5_unit_test: student.subject5_unit_test,
-      subject5_sem_marks: student.subject5_sem_marks,
-      total_cgpa: student.total_cgpa
-    });
+    setStudentFormOpen(true);
   };
 
-  const downloadTemplate = () => {
-    const csvContent = `Seat Number,Student Name,Gender,Subject1_UnitTest,Subject1_SemMarks,Subject2_UnitTest,Subject2_SemMarks,Subject3_UnitTest,Subject3_SemMarks,Subject4_UnitTest,Subject4_SemMarks,Subject5_UnitTest,Subject5_SemMarks,Total_CGPA
-12345,John Doe,Male,18,85,19,88,17,82,20,90,18,87,8.75`;
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'student_template.csv';
-    link.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handleBulkUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const csvData = e.target?.result as string;
-      const lines = csvData.split('\n');
-      const headers = lines[0].split(',');
-      
-      // Skip header row
-      const students = lines.slice(1).filter(line => line.trim()).map(line => {
-        const values = line.split(',');
-        return {
-          seat_number: parseInt(values[0]),
-          student_name: values[1]?.trim(),
-          gender: values[2]?.trim() || null,
-          subject1_unit_test: parseInt(values[3]) || 0,
-          subject1_sem_marks: parseInt(values[4]) || 0,
-          subject2_unit_test: parseInt(values[5]) || 0,
-          subject2_sem_marks: parseInt(values[6]) || 0,
-          subject3_unit_test: parseInt(values[7]) || 0,
-          subject3_sem_marks: parseInt(values[8]) || 0,
-          subject4_unit_test: parseInt(values[9]) || 0,
-          subject4_sem_marks: parseInt(values[10]) || 0,
-          subject5_unit_test: parseInt(values[11]) || 0,
-          subject5_sem_marks: parseInt(values[12]) || 0,
-          total_cgpa: parseFloat(values[13]) || 0,
-          academic_database_id: databaseId
-        };
-      });
-
-      try {
-        const { error } = await supabase
-          .from('students')
-          .insert(students.map(student => ({
-            ...student,
-            gender: student.gender && ['Male', 'Female', 'Other'].includes(student.gender) 
-              ? student.gender as 'Male' | 'Female' | 'Other'
-              : null
-          })));
-
-        if (error) {
-          toast({
-            title: "Upload Failed",
-            description: error.message,
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Upload Successful",
-            description: `${students.length} students uploaded successfully!`,
-          });
-          setUploadOpen(false);
-          fetchStudents();
-        }
-      } catch (error) {
-        toast({
-          title: "Upload Failed",
-          description: "An error occurred during upload.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    reader.readAsText(file);
-  };
-
-  const calculateTotal = (student: Student) => {
-    return student.subject1_unit_test + student.subject1_sem_marks +
-           student.subject2_unit_test + student.subject2_sem_marks +
-           student.subject3_unit_test + student.subject3_sem_marks +
-           student.subject4_unit_test + student.subject4_sem_marks +
-           student.subject5_unit_test + student.subject5_sem_marks;
+  const handleUploadComplete = () => {
+    fetchStudents();
   };
 
   if (!database) {
@@ -375,336 +163,48 @@ const ManageStudents = () => {
             </div>
             
             <div className="flex space-x-2">
-              <Button onClick={downloadTemplate} variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Download Template
+              <Button 
+                onClick={() => setUploadOpen(true)} 
+                variant="outline" 
+                size="sm"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Bulk Upload Students
               </Button>
-              <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Students
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Bulk Upload Students</DialogTitle>
-                    <DialogDescription>
-                      Upload a CSV file to add multiple students at once
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>CSV File</Label>
-                      <Input
-                        type="file"
-                        accept=".csv"
-                        onChange={handleBulkUpload}
-                      />
-                    </div>
-                    <Alert>
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        Please ensure your CSV file follows the template format. Download the template first if needed.
-                      </AlertDescription>
-                    </Alert>
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Dialog open={addStudentOpen} onOpenChange={setAddStudentOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Student
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add New Student</DialogTitle>
-                    <DialogDescription>
-                      Enter student details and marks for all subjects
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleAddStudent} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="seat_number">Seat Number</Label>
-                        <Input
-                          id="seat_number"
-                          type="number"
-                          min="10000"
-                          max="99999"
-                          value={studentForm.seat_number}
-                          onChange={(e) => setStudentForm({ ...studentForm, seat_number: e.target.value })}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="student_name">Student Name</Label>
-                        <Input
-                          id="student_name"
-                          value={studentForm.student_name}
-                          onChange={(e) => setStudentForm({ ...studentForm, student_name: e.target.value })}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="gender">Gender (Optional)</Label>
-                      <Select
-                        value={studentForm.gender}
-                        onValueChange={(value) => setStudentForm({ ...studentForm, gender: value as GenderType })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <div key={num} className="space-y-2">
-                        <Label className="font-medium">Subject {num}</Label>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor={`subject${num}_unit_test`}>Unit Test (Max: 20)</Label>
-                            <Input
-                              id={`subject${num}_unit_test`}
-                              type="number"
-                              min="0"
-                              max="20"
-                              value={studentForm[`subject${num}_unit_test` as keyof typeof studentForm]}
-                              onChange={(e) => setStudentForm({ 
-                                ...studentForm, 
-                                [`subject${num}_unit_test`]: parseInt(e.target.value) || 0 
-                              })}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor={`subject${num}_sem_marks`}>Semester Marks (Max: 90)</Label>
-                            <Input
-                              id={`subject${num}_sem_marks`}
-                              type="number"
-                              min="0"
-                              max="90"
-                              value={studentForm[`subject${num}_sem_marks` as keyof typeof studentForm]}
-                              onChange={(e) => setStudentForm({ 
-                                ...studentForm, 
-                                [`subject${num}_sem_marks`]: parseInt(e.target.value) || 0 
-                              })}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="total_cgpa">Total CGPA</Label>
-                      <Input
-                        id="total_cgpa"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="10"
-                        value={studentForm.total_cgpa}
-                        onChange={(e) => setStudentForm({ ...studentForm, total_cgpa: parseFloat(e.target.value) || 0 })}
-                      />
-                    </div>
-
-                    <div className="flex justify-end space-x-2">
-                      <Button type="button" variant="outline" onClick={() => setAddStudentOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={loading}>
-                        {loading ? 'Adding...' : 'Add Student'}
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => {
+                setEditStudent(null);
+                setStudentFormOpen(true);
+              }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
             </div>
           </div>
 
-          {students.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <User className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Students Added</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Add students manually or upload a CSV file to get started
-                </p>
-                <div className="flex space-x-2">
-                  <Button onClick={() => setAddStudentOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add First Student
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {students.map((student) => (
-                <Card key={student.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="truncate">{student.student_name}</span>
-                      <Badge variant="outline">{student.seat_number}</Badge>
-                    </CardTitle>
-                    <CardDescription>
-                      CGPA: {student.total_cgpa} | Total: {calculateTotal(student)}/550
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {student.gender && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Gender: </span>
-                        <span className="font-medium">{student.gender}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex space-x-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => openEditDialog(student)}
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => handleDeleteStudent(student.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          {/* Student List */}
+          <StudentList
+            students={students}
+            onEditStudent={handleEditStudent}
+            onDeleteStudent={handleDeleteStudent}
+          />
+
+          {/* Student Form Dialog */}
+          <StudentForm
+            open={studentFormOpen}
+            onOpenChange={setStudentFormOpen}
+            student={editStudent}
+            databaseId={databaseId!}
+            onSave={handleStudentSave}
+          />
+
+          {/* Bulk Upload Dialog */}
+          <BulkUploadPreview
+            databaseId={databaseId!}
+            onUploadComplete={handleUploadComplete}
+            open={uploadOpen}
+            onOpenChange={setUploadOpen}
+          />
         </div>
-
-        {/* Edit Student Dialog */}
-        <Dialog open={!!editStudent} onOpenChange={() => resetForm()}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Student</DialogTitle>
-              <DialogDescription>
-                Update student details and marks
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleEditStudent} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit_seat_number">Seat Number</Label>
-                  <Input
-                    id="edit_seat_number"
-                    type="number"
-                    min="10000"
-                    max="99999"
-                    value={studentForm.seat_number}
-                    onChange={(e) => setStudentForm({ ...studentForm, seat_number: e.target.value })}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit_student_name">Student Name</Label>
-                  <Input
-                    id="edit_student_name"
-                    value={studentForm.student_name}
-                    onChange={(e) => setStudentForm({ ...studentForm, student_name: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit_gender">Gender (Optional)</Label>
-                <Select
-                  value={studentForm.gender}
-                  onValueChange={(value) => setStudentForm({ ...studentForm, gender: value as GenderType })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {[1, 2, 3, 4, 5].map((num) => (
-                <div key={num} className="space-y-2">
-                  <Label className="font-medium">Subject {num}</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`edit_subject${num}_unit_test`}>Unit Test (Max: 20)</Label>
-                      <Input
-                        id={`edit_subject${num}_unit_test`}
-                        type="number"
-                        min="0"
-                        max="20"
-                        value={studentForm[`subject${num}_unit_test` as keyof typeof studentForm]}
-                        onChange={(e) => setStudentForm({ 
-                          ...studentForm, 
-                          [`subject${num}_unit_test`]: parseInt(e.target.value) || 0 
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`edit_subject${num}_sem_marks`}>Semester Marks (Max: 90)</Label>
-                      <Input
-                        id={`edit_subject${num}_sem_marks`}
-                        type="number"
-                        min="0"
-                        max="90"
-                        value={studentForm[`subject${num}_sem_marks` as keyof typeof studentForm]}
-                        onChange={(e) => setStudentForm({ 
-                          ...studentForm, 
-                          [`subject${num}_sem_marks`]: parseInt(e.target.value) || 0 
-                        })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <div className="space-y-2">
-                <Label htmlFor="edit_total_cgpa">Total CGPA</Label>
-                <Input
-                  id="edit_total_cgpa"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="10"
-                  value={studentForm.total_cgpa}
-                  onChange={(e) => setStudentForm({ ...studentForm, total_cgpa: parseFloat(e.target.value) || 0 })}
-                />
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => resetForm()}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Updating...' : 'Update Student'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );

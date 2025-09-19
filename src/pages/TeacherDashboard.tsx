@@ -78,7 +78,35 @@ const TeacherDashboard = () => {
 
   const handleCreateDatabase = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    // Validate batch format (YYYY - YYYY, years after 2020, exactly 4 years apart)
+    const batchPattern = /^20[2-9][0-9] - 20[2-9][0-9]$/;
+    if (!batchPattern.test(formData.batch)) {
+      toast({
+        title: "Invalid Batch Format",
+        description: "Batch must be in format 'YYYY - YYYY' with years after 2020",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const [startYear, endYear] = formData.batch.split(' - ').map(year => parseInt(year));
+    if (endYear - startYear !== 4) {
+      toast({
+        title: "Invalid Batch Years",
+        description: "Batch years must be exactly 4 years apart (e.g., 2023 - 2027)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (startYear < 2020 || endYear < 2024) {
+      toast({
+        title: "Invalid Batch Years",
+        description: "Batch years must be after 2020",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const { error } = await supabase
       .from('academic_databases')
@@ -305,14 +333,16 @@ const TeacherDashboard = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="batch">Batch</Label>
-                    <Input
-                      id="batch"
-                      value={formData.batch}
-                      onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                      placeholder="e.g., 2023 - 2027"
-                      required
-                    />
+              <Label htmlFor="batch">Batch (Format: YYYY - YYYY)</Label>
+              <Input
+                id="batch"
+                placeholder="e.g., 2023 - 2027"
+                value={formData.batch}
+                onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
+                pattern="20[2-9][0-9] - 20[2-9][0-9]"
+                title="Format: YYYY - YYYY (years after 2020, exactly 4 years apart)"
+                required
+              />
                   </div>
                   <div>
                     <Label htmlFor="branch">Branch</Label>

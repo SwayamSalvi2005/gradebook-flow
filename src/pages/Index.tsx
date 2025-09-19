@@ -65,34 +65,60 @@ const Index = () => {
 
         <div className="mt-16">
           <h2 className="text-2xl font-bold mb-8">Key Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 rounded-full bg-secondary">
-                <Database className="h-6 w-6 text-secondary-foreground" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Database className="h-6 w-6 text-primary" />
               </div>
               <h4 className="font-semibold">Database Management</h4>
-              <p className="text-sm text-muted-foreground text-center">
-                Create and manage multiple academic databases by year, semester, and branch
+              <p className="text-xs text-muted-foreground text-center">
+                Create and manage academic databases by branch, year (1st-4th), and semester with validation
               </p>
             </div>
             
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 rounded-full bg-secondary">
-                <Upload className="h-6 w-6 text-secondary-foreground" />
+            <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Users className="h-6 w-6 text-primary" />
               </div>
-              <h4 className="font-semibold">Bulk Upload</h4>
-              <p className="text-sm text-muted-foreground text-center">
-                Upload student data via Excel/CSV files with validation and error handling
+              <h4 className="font-semibold">Student Management</h4>
+              <p className="text-xs text-muted-foreground text-center">
+                Add students with unique 6-digit seat numbers, roll numbers, and marks for 5 subjects
               </p>
             </div>
             
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 rounded-full bg-secondary">
-                <BarChart3 className="h-6 w-6 text-secondary-foreground" />
+            <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg">
+              <div className="p-3 rounded-full bg-primary/10">
+                <Upload className="h-6 w-6 text-primary" />
               </div>
-              <h4 className="font-semibold">Analytics</h4>
-              <p className="text-sm text-muted-foreground text-center">
-                Comprehensive analytics with pass/fail rates, toppers, and demographic insights
+              <h4 className="font-semibold">Excel Import/Export</h4>
+              <p className="text-xs text-muted-foreground text-center">
+                Bulk upload via Excel templates with duplicate detection and validation
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center space-y-3 p-4 border rounded-lg">
+              <div className="p-3 rounded-full bg-primary/10">
+                <BarChart3 className="h-6 w-6 text-primary" />
+              </div>
+              <h4 className="font-semibold">Analytics & Reports</h4>
+              <p className="text-xs text-muted-foreground text-center">
+                Top 3 students by CGPA, pass/fail analysis, gender distribution, and PDF reports
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <div className="flex flex-col items-center space-y-2 p-3 bg-secondary/50 rounded-lg">
+              <h4 className="font-semibold text-sm">For Teachers</h4>
+              <p className="text-xs text-muted-foreground text-center">
+                Secure authentication, manage multiple databases, track student performance
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center space-y-2 p-3 bg-secondary/50 rounded-lg">
+              <h4 className="font-semibold text-sm">For Students</h4>
+              <p className="text-xs text-muted-foreground text-center">
+                Enter seat number to view marks, CGPA, ranking, and download formatted marksheet
               </p>
             </div>
           </div>
