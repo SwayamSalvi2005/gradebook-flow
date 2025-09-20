@@ -3,86 +3,78 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Download, ArrowLeft, User, BookOpen, Trophy, GraduationCap } from 'lucide-react';
+import { Download, ArrowLeft, User, GraduationCap, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-type BranchType = 'Computer Eng.' | 'Electronics and Telecom' | 'Information Technology' | 'Electronics and Computer Science' | 'Electrical';
-
-const branches: BranchType[] = [
-  'Computer Eng.',
-  'Electronics and Telecom',
-  'Information Technology',
-  'Electronics and Computer Science',
-  'Electrical'
-];
-
 const StudentPortal = () => {
-  const [formData, setFormData] = useState({
-    branch: '' as BranchType | '',
-    graduationYear: '',
-    yearClassification: '',
-    semester: '',
-    seatNumber: ''
-  });
+  const [seatNumber, setSeatNumber] = useState('');
   const [student, setStudent] = useState<any>(null);
   const [database, setDatabase] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    if (!formData.branch || !formData.graduationYear || !formData.yearClassification || !formData.semester) {
+    
+    if (!seatNumber) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields.",
+        description: "Please enter your seat number.",
         variant: "destructive",
       });
-      setLoading(false);
       return;
     }
 
+    // Validate seat number is 6 digits
+    const seatNum = parseInt(seatNumber);
+    if (seatNum < 100000 || seatNum > 999999) {
+      toast({
+        title: "Validation Error",
+        description: "Seat number must be exactly 6 digits.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      // First get the academic database
-      const { data: academicDb, error: dbError } = await supabase
-        .from('academic_databases')
-        .select('*')
-        .eq('branch', formData.branch as BranchType)
-        .eq('graduation_year', formData.graduationYear)
-        .eq('year_classification', formData.yearClassification)
-        .eq('semester', parseInt(formData.semester))
-        .single();
-
-      if (dbError || !academicDb) {
-        toast({
-          title: "Record Not Found",
-          description: "No records found for the selected criteria.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Then get the student record
+      // Get the student record by seat number
       const { data: studentData, error: studentError } = await supabase
         .from('students')
-        .select('*')
-        .eq('academic_database_id', academicDb.id)
-        .eq('seat_number', parseInt(formData.seatNumber))
-        .single();
+        .select(`
+          *,
+          academic_databases (
+            id,
+            database_name,
+            branch,
+            graduation_year,
+            year_classification,
+            semester,
+            batch
+          )
+        `)
+        .eq('seat_number', seatNum)
+        .maybeSingle();
 
-      if (studentError || !studentData) {
+      if (studentError) {
         toast({
-          title: "Record Not Found",
-          description: "No student found with the provided seat number.",
+          title: "Error",
+          description: "Failed to fetch student data.",
           variant: "destructive",
         });
+      } else if (!studentData) {
+        toast({
+          title: "Record Not Found",
+          description: "No student found with this seat number.",
+          variant: "destructive",
+        });
+        setStudent(null);
+        setDatabase(null);
       } else {
         setStudent(studentData);
-        setDatabase(academicDb);
+        setDatabase(studentData.academic_databases);
         toast({
           title: "Record Found",
           description: "Student record retrieved successfully!",
@@ -126,7 +118,7 @@ const StudentPortal = () => {
         <div className="space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2">Student Portal</h1>
-            <p className="text-muted-foreground">Search for your results using your seat number</p>
+            <p className="text-muted-foreground">Enter your 6-digit seat number to get your results instantly</p>
           </div>
 
           <Card>
@@ -141,86 +133,21 @@ const StudentPortal = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="branch">Branch</Label>
-                    <Select
-                      value={formData.branch}
-                      onValueChange={(value) => setFormData({ ...formData, branch: value as BranchType })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select branch" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {branches.map((branch) => (
-                          <SelectItem key={branch} value={branch}>
-                            {branch}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="graduationYear">Graduation Year</Label>
-                    <Input
-                      id="graduationYear"
-                      placeholder="e.g., 2027"
-                      value={formData.graduationYear}
-                      onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="yearClassification">Year</Label>
-                    <Select
-                      value={formData.yearClassification}
-                      onValueChange={(value) => setFormData({ ...formData, yearClassification: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1st Year">1st Year</SelectItem>
-                        <SelectItem value="2nd Year">2nd Year</SelectItem>
-                        <SelectItem value="3rd Year">3rd Year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="semester">Semester</Label>
-                    <Select
-                      value={formData.semester}
-                      onValueChange={(value) => setFormData({ ...formData, semester: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Semester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6].map((sem) => (
-                          <SelectItem key={sem} value={sem.toString()}>
-                            {sem}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="seatNumber">Seat Number</Label>
-                    <Input
-                      id="seatNumber"
-                      type="number"
-                      placeholder="5-digit"
-                      min="10000"
-                      max="99999"
-                      value={formData.seatNumber}
-                      onChange={(e) => setFormData({ ...formData, seatNumber: e.target.value })}
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="seatNumber">Seat Number</Label>
+                  <Input
+                    id="seatNumber"
+                    type="number"
+                    placeholder="6-digit seat number"
+                    min="100000"
+                    max="999999"
+                    value={seatNumber}
+                    onChange={(e) => setSeatNumber(e.target.value)}
+                    required
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Enter your 6-digit seat number to get your results
+                  </p>
                 </div>
 
                 <Button type="submit" disabled={loading} className="w-full">
@@ -256,19 +183,25 @@ const StudentPortal = () => {
                     <strong>Seat Number:</strong> {student.seat_number}
                   </div>
                   <div>
-                    <strong>Branch:</strong> {formData.branch}
+                    <strong>Roll Number:</strong> {student.roll_no || 'N/A'}
+                  </div>
+                  <div>
+                    <strong>Branch:</strong> {database?.branch}
                   </div>
                   <div>
                     <strong>Database:</strong> {database?.database_name}
                   </div>
                   <div>
-                    <strong>Graduation Year:</strong> {formData.graduationYear}
+                    <strong>Graduation Year:</strong> {database?.graduation_year}
                   </div>
                   <div>
-                    <strong>Year:</strong> {formData.yearClassification}
+                    <strong>Year:</strong> {database?.year_classification}
                   </div>
                   <div>
-                    <strong>Semester:</strong> {formData.semester}
+                    <strong>Semester:</strong> {database?.semester}
+                  </div>
+                  <div>
+                    <strong>Batch:</strong> {database?.batch}
                   </div>
                   {student.gender && (
                     <div>
