@@ -284,8 +284,8 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                       <div className="flex justify-between items-center mb-2">
                         <h5 className="font-medium">Subject {num}</h5>
                         <Badge variant="outline">
-                          {selectedStudent[`subject${num}_unit_test` as keyof Student] + 
-                           selectedStudent[`subject${num}_sem_marks` as keyof Student]}/110
+                          {Number(selectedStudent[`subject${num}_unit_test` as keyof Student]) + 
+                           Number(selectedStudent[`subject${num}_sem_marks` as keyof Student])}/110
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
