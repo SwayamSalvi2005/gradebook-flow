@@ -46,9 +46,19 @@ const TeacherDashboard = () => {
     graduation_year: "",
     year_classification: "1st Year",
     semester: 1,
-    batch: "",
     branch: "Computer Eng." as BranchType,
   });
+
+  // Helper function to get available semesters based on year
+  const getAvailableSemesters = (year: string) => {
+    switch (year) {
+      case "1st Year": return [1, 2];
+      case "2nd Year": return [3, 4];
+      case "3rd Year": return [5, 6];
+      case "4th Year": return [7, 8];
+      default: return [1, 2];
+    }
+  };
 
   if (!user) {
     navigate("/teacher-auth");
@@ -78,35 +88,7 @@ const TeacherDashboard = () => {
 
   const handleCreateDatabase = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate batch format (YYYY - YYYY, years after 2020, exactly 4 years apart)
-    const batchPattern = /^20[2-9][0-9] - 20[2-9][0-9]$/;
-    if (!batchPattern.test(formData.batch)) {
-      toast({
-        title: "Invalid Batch Format",
-        description: "Batch must be in format 'YYYY - YYYY' with years after 2020",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const [startYear, endYear] = formData.batch.split(' - ').map(year => parseInt(year));
-    if (endYear - startYear !== 4) {
-      toast({
-        title: "Invalid Batch Years",
-        description: "Batch years must be exactly 4 years apart (e.g., 2023 - 2027)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (startYear < 2020 || endYear < 2024) {
-      toast({
-        title: "Invalid Batch Years",
-        description: "Batch years must be after 2020",
-        variant: "destructive",
-      });
-      return;
-    }
+    setLoading(true);
 
     const { error } = await supabase
       .from('academic_databases')
@@ -117,7 +99,7 @@ const TeacherDashboard = () => {
           year_classification: formData.year_classification,
           semester: formData.semester,
           branch: formData.branch,
-          batch: formData.batch,
+          batch: `${parseInt(formData.graduation_year) - 4} - ${formData.graduation_year}`, // Auto-generate batch
           created_by: user.id
         }
       ]);
@@ -139,8 +121,7 @@ const TeacherDashboard = () => {
         graduation_year: "", 
         year_classification: "1st Year", 
         semester: 1, 
-        branch: "Computer Eng.", 
-        batch: "" 
+        branch: "Computer Eng."
       });
       fetchDatabases();
     }
@@ -304,7 +285,14 @@ const TeacherDashboard = () => {
                     <Label htmlFor="year_classification">Year</Label>
                     <Select
                       value={formData.year_classification}
-                      onValueChange={(value) => setFormData({ ...formData, year_classification: value })}
+                      onValueChange={(value) => {
+                        const availableSems = getAvailableSemesters(value);
+                        setFormData({ 
+                          ...formData, 
+                          year_classification: value,
+                          semester: availableSems[0] // Set to first available semester
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -327,22 +315,13 @@ const TeacherDashboard = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-popover z-50">
-                        <SelectItem value="1">Semester 1</SelectItem>
-                        <SelectItem value="2">Semester 2</SelectItem>
+                        {getAvailableSemesters(formData.year_classification).map((sem) => (
+                          <SelectItem key={sem} value={sem.toString()}>
+                            Semester {sem}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-              <Label htmlFor="batch">Batch (Format: YYYY - YYYY)</Label>
-              <Input
-                id="batch"
-                placeholder="e.g., 2023 - 2027"
-                value={formData.batch}
-                onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                pattern="20[2-9][0-9] - 20[2-9][0-9]"
-                title="Format: YYYY - YYYY (years after 2020, exactly 4 years apart)"
-                required
-              />
                   </div>
                   <div>
                     <Label htmlFor="branch">Branch</Label>
