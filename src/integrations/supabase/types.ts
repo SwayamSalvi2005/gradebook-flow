@@ -89,16 +89,26 @@ export type Database = {
           roll_no: string | null
           seat_number: number
           student_name: string
-          subject1_sem_marks: number | null
-          subject1_unit_test: number | null
-          subject2_sem_marks: number | null
-          subject2_unit_test: number | null
-          subject3_sem_marks: number | null
-          subject3_unit_test: number | null
-          subject4_sem_marks: number | null
-          subject4_unit_test: number | null
-          subject5_sem_marks: number | null
-          subject5_unit_test: number | null
+          subject1_ia_exam: number | null
+          subject1_sem_exam: number | null
+          subject1_term_marks: number | null
+          subject1_viva_marks: number | null
+          subject2_ia_exam: number | null
+          subject2_sem_exam: number | null
+          subject2_term_marks: number | null
+          subject2_viva_marks: number | null
+          subject3_ia_exam: number | null
+          subject3_sem_exam: number | null
+          subject3_term_marks: number | null
+          subject3_viva_marks: number | null
+          subject4_ia_exam: number | null
+          subject4_sem_exam: number | null
+          subject4_term_marks: number | null
+          subject4_viva_marks: number | null
+          subject5_ia_exam: number | null
+          subject5_sem_exam: number | null
+          subject5_term_marks: number | null
+          subject5_viva_marks: number | null
           total_cgpa: number | null
           updated_at: string
         }
@@ -110,16 +120,26 @@ export type Database = {
           roll_no?: string | null
           seat_number: number
           student_name: string
-          subject1_sem_marks?: number | null
-          subject1_unit_test?: number | null
-          subject2_sem_marks?: number | null
-          subject2_unit_test?: number | null
-          subject3_sem_marks?: number | null
-          subject3_unit_test?: number | null
-          subject4_sem_marks?: number | null
-          subject4_unit_test?: number | null
-          subject5_sem_marks?: number | null
-          subject5_unit_test?: number | null
+          subject1_ia_exam?: number | null
+          subject1_sem_exam?: number | null
+          subject1_term_marks?: number | null
+          subject1_viva_marks?: number | null
+          subject2_ia_exam?: number | null
+          subject2_sem_exam?: number | null
+          subject2_term_marks?: number | null
+          subject2_viva_marks?: number | null
+          subject3_ia_exam?: number | null
+          subject3_sem_exam?: number | null
+          subject3_term_marks?: number | null
+          subject3_viva_marks?: number | null
+          subject4_ia_exam?: number | null
+          subject4_sem_exam?: number | null
+          subject4_term_marks?: number | null
+          subject4_viva_marks?: number | null
+          subject5_ia_exam?: number | null
+          subject5_sem_exam?: number | null
+          subject5_term_marks?: number | null
+          subject5_viva_marks?: number | null
           total_cgpa?: number | null
           updated_at?: string
         }
@@ -131,16 +151,26 @@ export type Database = {
           roll_no?: string | null
           seat_number?: number
           student_name?: string
-          subject1_sem_marks?: number | null
-          subject1_unit_test?: number | null
-          subject2_sem_marks?: number | null
-          subject2_unit_test?: number | null
-          subject3_sem_marks?: number | null
-          subject3_unit_test?: number | null
-          subject4_sem_marks?: number | null
-          subject4_unit_test?: number | null
-          subject5_sem_marks?: number | null
-          subject5_unit_test?: number | null
+          subject1_ia_exam?: number | null
+          subject1_sem_exam?: number | null
+          subject1_term_marks?: number | null
+          subject1_viva_marks?: number | null
+          subject2_ia_exam?: number | null
+          subject2_sem_exam?: number | null
+          subject2_term_marks?: number | null
+          subject2_viva_marks?: number | null
+          subject3_ia_exam?: number | null
+          subject3_sem_exam?: number | null
+          subject3_term_marks?: number | null
+          subject3_viva_marks?: number | null
+          subject4_ia_exam?: number | null
+          subject4_sem_exam?: number | null
+          subject4_term_marks?: number | null
+          subject4_viva_marks?: number | null
+          subject5_ia_exam?: number | null
+          subject5_sem_exam?: number | null
+          subject5_term_marks?: number | null
+          subject5_viva_marks?: number | null
           total_cgpa?: number | null
           updated_at?: string
         }

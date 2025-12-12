@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,16 +13,26 @@ interface Student {
   roll_no?: string;
   student_name: string;
   gender?: string;
-  subject1_unit_test: number;
-  subject1_sem_marks: number;
-  subject2_unit_test: number;
-  subject2_sem_marks: number;
-  subject3_unit_test: number;
-  subject3_sem_marks: number;
-  subject4_unit_test: number;
-  subject4_sem_marks: number;
-  subject5_unit_test: number;
-  subject5_sem_marks: number;
+  subject1_sem_exam: number;
+  subject1_ia_exam: number;
+  subject1_term_marks: number;
+  subject1_viva_marks: number;
+  subject2_sem_exam: number;
+  subject2_ia_exam: number;
+  subject2_term_marks: number;
+  subject2_viva_marks: number;
+  subject3_sem_exam: number;
+  subject3_ia_exam: number;
+  subject3_term_marks: number;
+  subject3_viva_marks: number;
+  subject4_sem_exam: number;
+  subject4_ia_exam: number;
+  subject4_term_marks: number;
+  subject4_viva_marks: number;
+  subject5_sem_exam: number;
+  subject5_ia_exam: number;
+  subject5_term_marks: number;
+  subject5_viva_marks: number;
   total_cgpa: number;
 }
 
@@ -39,11 +49,22 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   const calculateTotal = (student: Student) => {
-    return student.subject1_unit_test + student.subject1_sem_marks +
-           student.subject2_unit_test + student.subject2_sem_marks +
-           student.subject3_unit_test + student.subject3_sem_marks +
-           student.subject4_unit_test + student.subject4_sem_marks +
-           student.subject5_unit_test + student.subject5_sem_marks;
+    let total = 0;
+    for (let i = 1; i <= 5; i++) {
+      total += Number(student[`subject${i}_sem_exam` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_ia_exam` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_term_marks` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_viva_marks` as keyof Student]) || 0;
+    }
+    return total;
+  };
+
+  const calculateSubjectTotal = (student: Student, num: number) => {
+    const semExam = Number(student[`subject${num}_sem_exam` as keyof Student]) || 0;
+    const iaExam = Number(student[`subject${num}_ia_exam` as keyof Student]) || 0;
+    const termMarks = Number(student[`subject${num}_term_marks` as keyof Student]) || 0;
+    const vivaMarks = Number(student[`subject${num}_viva_marks` as keyof Student]) || 0;
+    return semExam + iaExam + termMarks + vivaMarks;
   };
 
   const filteredAndSortedStudents = useMemo(() => {
@@ -61,7 +82,6 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
       return matchesSearch && matchesGender;
     });
 
-    // Sort students
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'roll_no':
@@ -146,11 +166,11 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
               className="cursor-pointer hover:shadow-md transition-shadow"
               onClick={() => setSelectedStudent(student)}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <CardTitle className="text-lg truncate">{student.student_name}</CardTitle>
+                    <span className="font-medium truncate">{student.student_name}</span>
                   </div>
                   <div className="flex space-x-1">
                     <Button
@@ -175,8 +195,6 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                     </Button>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-0">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Roll No:</span>
@@ -198,10 +216,10 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Total:</span>
-                    <span className="text-sm font-medium">{calculateTotal(student)}/550</span>
+                    <span className="text-sm font-medium">{calculateTotal(student)}/1125</span>
                   </div>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           ))}
         </div>
@@ -224,7 +242,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
       {/* Student Detail Dialog */}
       {selectedStudent && (
         <Dialog open={!!selectedStudent} onOpenChange={() => setSelectedStudent(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 <User className="h-5 w-5 mr-2" />
@@ -265,11 +283,11 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Marks:</span>
-                      <span>{calculateTotal(selectedStudent)}/550</span>
+                      <span>{calculateTotal(selectedStudent)}/1125</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Percentage:</span>
-                      <span>{((calculateTotal(selectedStudent) / 550) * 100).toFixed(1)}%</span>
+                      <span>{((calculateTotal(selectedStudent) / 1125) * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 </div>
@@ -284,18 +302,25 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                       <div className="flex justify-between items-center mb-2">
                         <h5 className="font-medium">Subject {num}</h5>
                         <Badge variant="outline">
-                          {Number(selectedStudent[`subject${num}_unit_test` as keyof Student]) + 
-                           Number(selectedStudent[`subject${num}_sem_marks` as keyof Student])}/110
+                          {calculateSubjectTotal(selectedStudent, num)}/225
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Unit Test:</span>
-                          <span>{selectedStudent[`subject${num}_unit_test` as keyof Student]}/20</span>
+                          <span className="text-muted-foreground">Sem Exam:</span>
+                          <span>{selectedStudent[`subject${num}_sem_exam` as keyof Student]}/80</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Semester:</span>
-                          <span>{selectedStudent[`subject${num}_sem_marks` as keyof Student]}/90</span>
+                          <span className="text-muted-foreground">IA Exam:</span>
+                          <span>{selectedStudent[`subject${num}_ia_exam` as keyof Student]}/20</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Term Marks:</span>
+                          <span>{selectedStudent[`subject${num}_term_marks` as keyof Student]}/100</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Viva:</span>
+                          <span>{selectedStudent[`subject${num}_viva_marks` as keyof Student]}/25</span>
                         </div>
                       </div>
                     </div>

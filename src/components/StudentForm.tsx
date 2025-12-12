@@ -13,16 +13,26 @@ interface Student {
   roll_no?: string;
   student_name: string;
   gender?: string;
-  subject1_unit_test: number;
-  subject1_sem_marks: number;
-  subject2_unit_test: number;
-  subject2_sem_marks: number;
-  subject3_unit_test: number;
-  subject3_sem_marks: number;
-  subject4_unit_test: number;
-  subject4_sem_marks: number;
-  subject5_unit_test: number;
-  subject5_sem_marks: number;
+  subject1_sem_exam: number;
+  subject1_ia_exam: number;
+  subject1_term_marks: number;
+  subject1_viva_marks: number;
+  subject2_sem_exam: number;
+  subject2_ia_exam: number;
+  subject2_term_marks: number;
+  subject2_viva_marks: number;
+  subject3_sem_exam: number;
+  subject3_ia_exam: number;
+  subject3_term_marks: number;
+  subject3_viva_marks: number;
+  subject4_sem_exam: number;
+  subject4_ia_exam: number;
+  subject4_term_marks: number;
+  subject4_viva_marks: number;
+  subject5_sem_exam: number;
+  subject5_ia_exam: number;
+  subject5_term_marks: number;
+  subject5_viva_marks: number;
   total_cgpa: number;
 }
 
@@ -34,25 +44,37 @@ interface StudentFormProps {
   onSave: () => void;
 }
 
+const getDefaultFormData = () => ({
+  seat_number: '',
+  roll_no: '',
+  student_name: '',
+  gender: '' as '' | 'Male' | 'Female' | 'Other',
+  subject1_sem_exam: 0,
+  subject1_ia_exam: 0,
+  subject1_term_marks: 0,
+  subject1_viva_marks: 0,
+  subject2_sem_exam: 0,
+  subject2_ia_exam: 0,
+  subject2_term_marks: 0,
+  subject2_viva_marks: 0,
+  subject3_sem_exam: 0,
+  subject3_ia_exam: 0,
+  subject3_term_marks: 0,
+  subject3_viva_marks: 0,
+  subject4_sem_exam: 0,
+  subject4_ia_exam: 0,
+  subject4_term_marks: 0,
+  subject4_viva_marks: 0,
+  subject5_sem_exam: 0,
+  subject5_ia_exam: 0,
+  subject5_term_marks: 0,
+  subject5_viva_marks: 0,
+  total_cgpa: 0.00
+});
+
 export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }: StudentFormProps) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    seat_number: '',
-    roll_no: '',
-    student_name: '',
-    gender: '' as '' | 'Male' | 'Female' | 'Other',
-    subject1_unit_test: 0,
-    subject1_sem_marks: 0,
-    subject2_unit_test: 0,
-    subject2_sem_marks: 0,
-    subject3_unit_test: 0,
-    subject3_sem_marks: 0,
-    subject4_unit_test: 0,
-    subject4_sem_marks: 0,
-    subject5_unit_test: 0,
-    subject5_sem_marks: 0,
-    total_cgpa: 0.00
-  });
+  const [formData, setFormData] = useState(getDefaultFormData());
 
   // Generate unique seat number
   const generateSeatNumber = async () => {
@@ -61,13 +83,13 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
     let attempts = 0;
     
     while (!isUnique && attempts < 10) {
-      seatNumber = Math.floor(100000 + Math.random() * 900000); // 6-digit number
+      seatNumber = Math.floor(100000 + Math.random() * 900000);
       
       const { data } = await supabase
         .from('students')
         .select('seat_number')
         .eq('seat_number', seatNumber)
-        .single();
+        .maybeSingle();
       
       if (!data) {
         isUnique = true;
@@ -88,43 +110,35 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
 
   useEffect(() => {
     if (student) {
-      // Edit mode
       setFormData({
         seat_number: student.seat_number.toString(),
         roll_no: student.roll_no || '',
         student_name: student.student_name,
         gender: (student.gender as 'Male' | 'Female' | 'Other') || '',
-        subject1_unit_test: student.subject1_unit_test,
-        subject1_sem_marks: student.subject1_sem_marks,
-        subject2_unit_test: student.subject2_unit_test,
-        subject2_sem_marks: student.subject2_sem_marks,
-        subject3_unit_test: student.subject3_unit_test,
-        subject3_sem_marks: student.subject3_sem_marks,
-        subject4_unit_test: student.subject4_unit_test,
-        subject4_sem_marks: student.subject4_sem_marks,
-        subject5_unit_test: student.subject5_unit_test,
-        subject5_sem_marks: student.subject5_sem_marks,
+        subject1_sem_exam: student.subject1_sem_exam,
+        subject1_ia_exam: student.subject1_ia_exam,
+        subject1_term_marks: student.subject1_term_marks,
+        subject1_viva_marks: student.subject1_viva_marks,
+        subject2_sem_exam: student.subject2_sem_exam,
+        subject2_ia_exam: student.subject2_ia_exam,
+        subject2_term_marks: student.subject2_term_marks,
+        subject2_viva_marks: student.subject2_viva_marks,
+        subject3_sem_exam: student.subject3_sem_exam,
+        subject3_ia_exam: student.subject3_ia_exam,
+        subject3_term_marks: student.subject3_term_marks,
+        subject3_viva_marks: student.subject3_viva_marks,
+        subject4_sem_exam: student.subject4_sem_exam,
+        subject4_ia_exam: student.subject4_ia_exam,
+        subject4_term_marks: student.subject4_term_marks,
+        subject4_viva_marks: student.subject4_viva_marks,
+        subject5_sem_exam: student.subject5_sem_exam,
+        subject5_ia_exam: student.subject5_ia_exam,
+        subject5_term_marks: student.subject5_term_marks,
+        subject5_viva_marks: student.subject5_viva_marks,
         total_cgpa: student.total_cgpa
       });
     } else {
-      // Add mode - reset form and generate seat number
-      setFormData({
-        seat_number: '',
-        roll_no: '',
-        student_name: '',
-        gender: '',
-        subject1_unit_test: 0,
-        subject1_sem_marks: 0,
-        subject2_unit_test: 0,
-        subject2_sem_marks: 0,
-        subject3_unit_test: 0,
-        subject3_sem_marks: 0,
-        subject4_unit_test: 0,
-        subject4_sem_marks: 0,
-        subject5_unit_test: 0,
-        subject5_sem_marks: 0,
-        total_cgpa: 0.00
-      });
+      setFormData(getDefaultFormData());
       if (open && !student) {
         generateSeatNumber();
       }
@@ -132,7 +146,6 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
   }, [student, open]);
 
   const validateForm = () => {
-    // Validate seat number (6 digits)
     if (!formData.seat_number || formData.seat_number.length !== 6) {
       toast({
         title: "Validation Error",
@@ -142,7 +155,6 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
       return false;
     }
 
-    // Validate roll number (max 2 digits, under 200)
     if (formData.roll_no && (parseInt(formData.roll_no) > 199 || formData.roll_no.length > 2)) {
       toast({
         title: "Validation Error",
@@ -152,7 +164,6 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
       return false;
     }
 
-    // Validate name
     if (!formData.student_name.trim()) {
       toast({
         title: "Validation Error",
@@ -162,31 +173,50 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
       return false;
     }
 
-    // Validate marks
+    // Validate marks for each subject
     for (let i = 1; i <= 5; i++) {
-      const unitTest = formData[`subject${i}_unit_test` as keyof typeof formData] as number;
-      const semMarks = formData[`subject${i}_sem_marks` as keyof typeof formData] as number;
+      const semExam = formData[`subject${i}_sem_exam` as keyof typeof formData] as number;
+      const iaExam = formData[`subject${i}_ia_exam` as keyof typeof formData] as number;
+      const termMarks = formData[`subject${i}_term_marks` as keyof typeof formData] as number;
+      const vivaMarks = formData[`subject${i}_viva_marks` as keyof typeof formData] as number;
       
-      if (unitTest < 0 || unitTest > 20) {
+      if (semExam < 0 || semExam > 80) {
         toast({
           title: "Validation Error",
-          description: `Subject ${i} unit test marks must be between 0-20`,
+          description: `Subject ${i} Sem Exam marks must be between 0-80`,
           variant: "destructive",
         });
         return false;
       }
       
-      if (semMarks < 0 || semMarks > 90) {
+      if (iaExam < 0 || iaExam > 20) {
         toast({
           title: "Validation Error",
-          description: `Subject ${i} semester marks must be between 0-90`,
+          description: `Subject ${i} IA Exam marks must be between 0-20`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (termMarks < 0 || termMarks > 100) {
+        toast({
+          title: "Validation Error",
+          description: `Subject ${i} Term Marks must be between 0-100`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (vivaMarks < 0 || vivaMarks > 25) {
+        toast({
+          title: "Validation Error",
+          description: `Subject ${i} Viva Marks must be between 0-25`,
           variant: "destructive",
         });
         return false;
       }
     }
 
-    // Validate CGPA
     if (formData.total_cgpa < 0 || formData.total_cgpa > 10) {
       toast({
         title: "Validation Error",
@@ -212,22 +242,31 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
         roll_no: formData.roll_no || null,
         student_name: formData.student_name.trim(),
         gender: formData.gender || null,
-        subject1_unit_test: formData.subject1_unit_test,
-        subject1_sem_marks: formData.subject1_sem_marks,
-        subject2_unit_test: formData.subject2_unit_test,
-        subject2_sem_marks: formData.subject2_sem_marks,
-        subject3_unit_test: formData.subject3_unit_test,
-        subject3_sem_marks: formData.subject3_sem_marks,
-        subject4_unit_test: formData.subject4_unit_test,
-        subject4_sem_marks: formData.subject4_sem_marks,
-        subject5_unit_test: formData.subject5_unit_test,
-        subject5_sem_marks: formData.subject5_sem_marks,
+        subject1_sem_exam: formData.subject1_sem_exam,
+        subject1_ia_exam: formData.subject1_ia_exam,
+        subject1_term_marks: formData.subject1_term_marks,
+        subject1_viva_marks: formData.subject1_viva_marks,
+        subject2_sem_exam: formData.subject2_sem_exam,
+        subject2_ia_exam: formData.subject2_ia_exam,
+        subject2_term_marks: formData.subject2_term_marks,
+        subject2_viva_marks: formData.subject2_viva_marks,
+        subject3_sem_exam: formData.subject3_sem_exam,
+        subject3_ia_exam: formData.subject3_ia_exam,
+        subject3_term_marks: formData.subject3_term_marks,
+        subject3_viva_marks: formData.subject3_viva_marks,
+        subject4_sem_exam: formData.subject4_sem_exam,
+        subject4_ia_exam: formData.subject4_ia_exam,
+        subject4_term_marks: formData.subject4_term_marks,
+        subject4_viva_marks: formData.subject4_viva_marks,
+        subject5_sem_exam: formData.subject5_sem_exam,
+        subject5_ia_exam: formData.subject5_ia_exam,
+        subject5_term_marks: formData.subject5_term_marks,
+        subject5_viva_marks: formData.subject5_viva_marks,
         total_cgpa: formData.total_cgpa,
         academic_database_id: databaseId
       };
 
       if (student) {
-        // Update existing student
         const { error } = await supabase
           .from('students')
           .update(studentData)
@@ -240,7 +279,6 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
           description: "Student updated successfully!",
         });
       } else {
-        // Create new student
         const { error } = await supabase
           .from('students')
           .insert([studentData]);
@@ -266,9 +304,17 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
     setLoading(false);
   };
 
+  const calculateSubjectTotal = (num: number) => {
+    const semExam = formData[`subject${num}_sem_exam` as keyof typeof formData] as number;
+    const iaExam = formData[`subject${num}_ia_exam` as keyof typeof formData] as number;
+    const termMarks = formData[`subject${num}_term_marks` as keyof typeof formData] as number;
+    const vivaMarks = formData[`subject${num}_viva_marks` as keyof typeof formData] as number;
+    return semExam + iaExam + termMarks + vivaMarks;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {student ? 'Edit Student' : 'Add New Student'}
@@ -349,42 +395,69 @@ export const StudentForm = ({ open, onOpenChange, student, databaseId, onSave }:
             <h4 className="font-semibold">Subject Marks</h4>
             {[1, 2, 3, 4, 5].map((num) => (
               <div key={num} className="border rounded-lg p-4">
-                <Label className="font-medium mb-3 block">Subject {num}</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex justify-between items-center mb-3">
+                  <Label className="font-medium">Subject {num}</Label>
+                  <span className="text-sm text-muted-foreground">
+                    Total: {calculateSubjectTotal(num)}/225
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`subject${num}_unit_test`}>Unit Test (0-20) *</Label>
+                    <Label htmlFor={`subject${num}_sem_exam`}>Sem Exam (0-80)</Label>
                     <Input
-                      id={`subject${num}_unit_test`}
+                      id={`subject${num}_sem_exam`}
+                      type="number"
+                      min="0"
+                      max="80"
+                      value={formData[`subject${num}_sem_exam` as keyof typeof formData]}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        [`subject${num}_sem_exam`]: parseInt(e.target.value) || 0 
+                      })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`subject${num}_ia_exam`}>IA Exam (0-20)</Label>
+                    <Input
+                      id={`subject${num}_ia_exam`}
                       type="number"
                       min="0"
                       max="20"
-                      value={formData[`subject${num}_unit_test` as keyof typeof formData]}
+                      value={formData[`subject${num}_ia_exam` as keyof typeof formData]}
                       onChange={(e) => setFormData({ 
                         ...formData, 
-                        [`subject${num}_unit_test`]: parseInt(e.target.value) || 0 
+                        [`subject${num}_ia_exam`]: parseInt(e.target.value) || 0 
                       })}
-                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor={`subject${num}_sem_marks`}>Semester Marks (0-90) *</Label>
+                    <Label htmlFor={`subject${num}_term_marks`}>Term Marks (0-100)</Label>
                     <Input
-                      id={`subject${num}_sem_marks`}
+                      id={`subject${num}_term_marks`}
                       type="number"
                       min="0"
-                      max="90"
-                      value={formData[`subject${num}_sem_marks` as keyof typeof formData]}
+                      max="100"
+                      value={formData[`subject${num}_term_marks` as keyof typeof formData]}
                       onChange={(e) => setFormData({ 
                         ...formData, 
-                        [`subject${num}_sem_marks`]: parseInt(e.target.value) || 0 
+                        [`subject${num}_term_marks`]: parseInt(e.target.value) || 0 
                       })}
-                      required
                     />
                   </div>
-                </div>
-                <div className="mt-2 text-sm text-muted-foreground">
-                  Total: {(formData[`subject${num}_unit_test` as keyof typeof formData] as number) + 
-                          (formData[`subject${num}_sem_marks` as keyof typeof formData] as number)}/110
+                  <div className="space-y-2">
+                    <Label htmlFor={`subject${num}_viva_marks`}>Viva Marks (0-25)</Label>
+                    <Input
+                      id={`subject${num}_viva_marks`}
+                      type="number"
+                      min="0"
+                      max="25"
+                      value={formData[`subject${num}_viva_marks` as keyof typeof formData]}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        [`subject${num}_viva_marks`]: parseInt(e.target.value) || 0 
+                      })}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

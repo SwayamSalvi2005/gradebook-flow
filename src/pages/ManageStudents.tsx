@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, Upload } from 'lucide-react';
@@ -17,16 +16,26 @@ interface Student {
   roll_no?: string;
   student_name: string;
   gender?: string;
-  subject1_unit_test: number;
-  subject1_sem_marks: number;
-  subject2_unit_test: number;
-  subject2_sem_marks: number;
-  subject3_unit_test: number;
-  subject3_sem_marks: number;
-  subject4_unit_test: number;
-  subject4_sem_marks: number;
-  subject5_unit_test: number;
-  subject5_sem_marks: number;
+  subject1_sem_exam: number;
+  subject1_ia_exam: number;
+  subject1_term_marks: number;
+  subject1_viva_marks: number;
+  subject2_sem_exam: number;
+  subject2_ia_exam: number;
+  subject2_term_marks: number;
+  subject2_viva_marks: number;
+  subject3_sem_exam: number;
+  subject3_ia_exam: number;
+  subject3_term_marks: number;
+  subject3_viva_marks: number;
+  subject4_sem_exam: number;
+  subject4_ia_exam: number;
+  subject4_term_marks: number;
+  subject4_viva_marks: number;
+  subject5_sem_exam: number;
+  subject5_ia_exam: number;
+  subject5_term_marks: number;
+  subject5_viva_marks: number;
   total_cgpa: number;
 }
 
