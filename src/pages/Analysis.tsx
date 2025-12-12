@@ -24,16 +24,26 @@ interface Student {
   seat_number: number;
   student_name: string;
   gender?: string;
-  subject1_unit_test: number;
-  subject1_sem_marks: number;
-  subject2_unit_test: number;
-  subject2_sem_marks: number;
-  subject3_unit_test: number;
-  subject3_sem_marks: number;
-  subject4_unit_test: number;
-  subject4_sem_marks: number;
-  subject5_unit_test: number;
-  subject5_sem_marks: number;
+  subject1_sem_exam: number;
+  subject1_ia_exam: number;
+  subject1_term_marks: number;
+  subject1_viva_marks: number;
+  subject2_sem_exam: number;
+  subject2_ia_exam: number;
+  subject2_term_marks: number;
+  subject2_viva_marks: number;
+  subject3_sem_exam: number;
+  subject3_ia_exam: number;
+  subject3_term_marks: number;
+  subject3_viva_marks: number;
+  subject4_sem_exam: number;
+  subject4_ia_exam: number;
+  subject4_term_marks: number;
+  subject4_viva_marks: number;
+  subject5_sem_exam: number;
+  subject5_ia_exam: number;
+  subject5_term_marks: number;
+  subject5_viva_marks: number;
   total_cgpa: number;
 }
 
@@ -67,7 +77,7 @@ const Analysis = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [passThreshold] = useState(40); // Configurable pass threshold percentage
+  const [passThreshold] = useState(40);
 
   if (!user) {
     return <Navigate to="/teacher-auth" replace />;
@@ -82,7 +92,6 @@ const Analysis = () => {
   const fetchData = async () => {
     setLoading(true);
     
-    // Fetch database details
     const { data: dbData, error: dbError } = await supabase
       .from('academic_databases')
       .select('*')
@@ -101,7 +110,6 @@ const Analysis = () => {
 
     setDatabase(dbData);
 
-    // Fetch students
     const { data: studentsData, error: studentsError } = await supabase
       .from('students')
       .select('*')
@@ -123,18 +131,19 @@ const Analysis = () => {
   };
 
   const calculateTotal = (student: Student) => {
-    return (
-      student.subject1_unit_test + student.subject1_sem_marks +
-      student.subject2_unit_test + student.subject2_sem_marks +
-      student.subject3_unit_test + student.subject3_sem_marks +
-      student.subject4_unit_test + student.subject4_sem_marks +
-      student.subject5_unit_test + student.subject5_sem_marks
-    );
+    let total = 0;
+    for (let i = 1; i <= 5; i++) {
+      total += Number(student[`subject${i}_sem_exam` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_ia_exam` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_term_marks` as keyof Student]) || 0;
+      total += Number(student[`subject${i}_viva_marks` as keyof Student]) || 0;
+    }
+    return total;
   };
 
   const calculatePercentage = (student: Student) => {
     const total = calculateTotal(student);
-    return (total / 550) * 100; // 550 is the maximum possible marks (5 subjects × 110 marks each)
+    return (total / 1125) * 100; // 1125 is the maximum possible marks (5 subjects × 225 marks each)
   };
 
   const calculateAnalytics = (studentsData: Student[]) => {
@@ -154,21 +163,17 @@ const Analysis = () => {
       return;
     }
 
-    // Gender distribution
     const maleStudents = studentsData.filter(s => s.gender === 'Male').length;
     const femaleStudents = studentsData.filter(s => s.gender === 'Female').length;
     const otherGender = studentsData.filter(s => s.gender === 'Other').length;
 
-    // Pass/Fail analysis
     const passedStudents = studentsData.filter(s => calculatePercentage(s) >= passThreshold).length;
     const failedStudents = studentsData.length - passedStudents;
 
-    // Find top 3 toppers (highest CGPA)
     const sortedByCGPA = [...studentsData].sort((a, b) => b.total_cgpa - a.total_cgpa);
     const highestCGPA = sortedByCGPA[0]?.total_cgpa || 0;
     const toppers = sortedByCGPA.filter(student => student.total_cgpa === highestCGPA).slice(0, 3);
 
-    // Calculate averages and extremes
     const averageCGPA = studentsData.reduce((sum, s) => sum + s.total_cgpa, 0) / studentsData.length;
     const cgpaValues = studentsData.map(s => s.total_cgpa);
     const lowestCGPA = Math.min(...cgpaValues);
@@ -445,53 +450,39 @@ const Analysis = () => {
                         <div className="flex items-center space-x-2">
                           <span className="font-medium text-red-600">{analytics.failedStudents}</span>
                           <span className="text-sm text-muted-foreground">
-                            ({(100 - parseFloat(passPercentage)).toFixed(1)}%)
+                            ({analytics.totalStudents > 0 ? ((analytics.failedStudents / analytics.totalStudents) * 100).toFixed(1) : 0}%)
                           </span>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <div className="text-sm text-muted-foreground mb-2">Pass Rate Progress</div>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${passPercentage}%` }}
-                        ></div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-              {/* CGPA Range Analysis */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-                    CGPA Range
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Highest CGPA:</span>
-                      <span className="font-medium">{analytics.highestCGPA}</span>
+                {/* CGPA Distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BarChart3 className="mr-2 h-5 w-5 text-primary" />
+                      CGPA Statistics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span>Highest CGPA</span>
+                        <Badge variant="secondary">{analytics.highestCGPA}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Average CGPA</span>
+                        <Badge variant="outline">{analytics.averageCGPA.toFixed(2)}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Lowest CGPA</span>
+                        <Badge variant="destructive">{analytics.lowestCGPA}</Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Lowest CGPA:</span>
-                      <span className="font-medium">{analytics.lowestCGPA}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>CGPA Range:</span>
-                      <span className="font-medium">{(analytics.highestCGPA - analytics.lowestCGPA).toFixed(2)} points</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Average CGPA:</span>
-                      <span className="font-medium">{analytics.averageCGPA.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
               </div>
             </>
           )}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, X, Download, Eye } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle, X, Download, Eye } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,16 +17,26 @@ interface StudentData {
   roll_no: string;
   student_name: string;
   gender?: string;
-  subject1_unit_test: number;
-  subject1_sem_marks: number;
-  subject2_unit_test: number;
-  subject2_sem_marks: number;
-  subject3_unit_test: number;
-  subject3_sem_marks: number;
-  subject4_unit_test: number;
-  subject4_sem_marks: number;
-  subject5_unit_test: number;
-  subject5_sem_marks: number;
+  subject1_sem_exam: number;
+  subject1_ia_exam: number;
+  subject1_term_marks: number;
+  subject1_viva_marks: number;
+  subject2_sem_exam: number;
+  subject2_ia_exam: number;
+  subject2_term_marks: number;
+  subject2_viva_marks: number;
+  subject3_sem_exam: number;
+  subject3_ia_exam: number;
+  subject3_term_marks: number;
+  subject3_viva_marks: number;
+  subject4_sem_exam: number;
+  subject4_ia_exam: number;
+  subject4_term_marks: number;
+  subject4_viva_marks: number;
+  subject5_sem_exam: number;
+  subject5_ia_exam: number;
+  subject5_term_marks: number;
+  subject5_viva_marks: number;
   total_cgpa: number;
 }
 
@@ -44,9 +54,9 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
   const [showPreview, setShowPreview] = useState(false);
 
   const downloadTemplate = () => {
-    const csvContent = `Seat Number,Roll No,Student Name,Gender,Subject1_UnitTest,Subject1_SemMarks,Subject2_UnitTest,Subject2_SemMarks,Subject3_UnitTest,Subject3_SemMarks,Subject4_UnitTest,Subject4_SemMarks,Subject5_UnitTest,Subject5_SemMarks,Total_CGPA
-123456,01,John Doe,Male,18,75,19,80,17,72,20,85,18,78,8.75
-123457,02,Jane Smith,Female,20,88,18,82,19,85,17,79,19,87,9.12`;
+    const csvContent = `Seat Number,Roll No,Student Name,Gender,S1_SemExam,S1_IAExam,S1_TermMarks,S1_Viva,S2_SemExam,S2_IAExam,S2_TermMarks,S2_Viva,S3_SemExam,S3_IAExam,S3_TermMarks,S3_Viva,S4_SemExam,S4_IAExam,S4_TermMarks,S4_Viva,S5_SemExam,S5_IAExam,S5_TermMarks,S5_Viva,Total_CGPA
+123456,01,John Doe,Male,70,18,85,20,65,17,80,22,72,19,88,21,68,16,82,20,75,18,90,23,8.75
+123457,02,Jane Smith,Female,75,19,90,23,70,18,85,21,68,17,82,20,72,19,88,22,78,20,92,24,9.12`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -60,35 +70,39 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
   const validateStudent = (student: any, index: number): string[] => {
     const errors: string[] = [];
     
-    // Validate seat number (6 digits)
     if (!student.seat_number || student.seat_number.toString().length !== 6) {
       errors.push(`Row ${index + 2}: Seat number must be exactly 6 digits`);
     }
     
-    // Validate roll number (max 2 digits, under 200)
     if (student.roll_no && (student.roll_no > 199 || student.roll_no.toString().length > 2)) {
       errors.push(`Row ${index + 2}: Roll number must be under 200 and max 2 digits`);
     }
     
-    // Validate name
     if (!student.student_name || student.student_name.trim().length === 0) {
       errors.push(`Row ${index + 2}: Student name is required`);
     }
     
-    // Validate marks
+    // Validate marks for each subject
     [1, 2, 3, 4, 5].forEach(num => {
-      const unitTest = student[`subject${num}_unit_test`];
-      const semMarks = student[`subject${num}_sem_marks`];
+      const semExam = student[`subject${num}_sem_exam`];
+      const iaExam = student[`subject${num}_ia_exam`];
+      const termMarks = student[`subject${num}_term_marks`];
+      const vivaMarks = student[`subject${num}_viva_marks`];
       
-      if (unitTest < 0 || unitTest > 20) {
-        errors.push(`Row ${index + 2}: Subject ${num} unit test marks must be between 0-20`);
+      if (semExam < 0 || semExam > 80) {
+        errors.push(`Row ${index + 2}: Subject ${num} Sem Exam must be between 0-80`);
       }
-      if (semMarks < 0 || semMarks > 90) {
-        errors.push(`Row ${index + 2}: Subject ${num} semester marks must be between 0-90`);
+      if (iaExam < 0 || iaExam > 20) {
+        errors.push(`Row ${index + 2}: Subject ${num} IA Exam must be between 0-20`);
+      }
+      if (termMarks < 0 || termMarks > 100) {
+        errors.push(`Row ${index + 2}: Subject ${num} Term Marks must be between 0-100`);
+      }
+      if (vivaMarks < 0 || vivaMarks > 25) {
+        errors.push(`Row ${index + 2}: Subject ${num} Viva Marks must be between 0-25`);
       }
     });
     
-    // Validate CGPA
     if (student.total_cgpa < 0 || student.total_cgpa > 10) {
       errors.push(`Row ${index + 2}: CGPA must be between 0-10`);
     }
@@ -113,15 +127,14 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
       const headers = lines[0].split(',').map(h => h.trim());
       const expectedHeaders = [
         'Seat Number', 'Roll No', 'Student Name', 'Gender',
-        'Subject1_UnitTest', 'Subject1_SemMarks',
-        'Subject2_UnitTest', 'Subject2_SemMarks',
-        'Subject3_UnitTest', 'Subject3_SemMarks',
-        'Subject4_UnitTest', 'Subject4_SemMarks',
-        'Subject5_UnitTest', 'Subject5_SemMarks',
+        'S1_SemExam', 'S1_IAExam', 'S1_TermMarks', 'S1_Viva',
+        'S2_SemExam', 'S2_IAExam', 'S2_TermMarks', 'S2_Viva',
+        'S3_SemExam', 'S3_IAExam', 'S3_TermMarks', 'S3_Viva',
+        'S4_SemExam', 'S4_IAExam', 'S4_TermMarks', 'S4_Viva',
+        'S5_SemExam', 'S5_IAExam', 'S5_TermMarks', 'S5_Viva',
         'Total_CGPA'
       ];
       
-      // Check headers
       const headerErrors: string[] = [];
       expectedHeaders.forEach(expected => {
         if (!headers.includes(expected)) {
@@ -134,7 +147,6 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
         return;
       }
       
-      // Parse data rows
       const students: StudentData[] = [];
       const allErrors: string[] = [];
       
@@ -147,17 +159,27 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
             roll_no: values[1] || '',
             student_name: values[2] || '',
             gender: values[3] || undefined,
-            subject1_unit_test: parseInt(values[4]) || 0,
-            subject1_sem_marks: parseInt(values[5]) || 0,
-            subject2_unit_test: parseInt(values[6]) || 0,
-            subject2_sem_marks: parseInt(values[7]) || 0,
-            subject3_unit_test: parseInt(values[8]) || 0,
-            subject3_sem_marks: parseInt(values[9]) || 0,
-            subject4_unit_test: parseInt(values[10]) || 0,
-            subject4_sem_marks: parseInt(values[11]) || 0,
-            subject5_unit_test: parseInt(values[12]) || 0,
-            subject5_sem_marks: parseInt(values[13]) || 0,
-            total_cgpa: parseFloat(values[14]) || 0,
+            subject1_sem_exam: parseInt(values[4]) || 0,
+            subject1_ia_exam: parseInt(values[5]) || 0,
+            subject1_term_marks: parseInt(values[6]) || 0,
+            subject1_viva_marks: parseInt(values[7]) || 0,
+            subject2_sem_exam: parseInt(values[8]) || 0,
+            subject2_ia_exam: parseInt(values[9]) || 0,
+            subject2_term_marks: parseInt(values[10]) || 0,
+            subject2_viva_marks: parseInt(values[11]) || 0,
+            subject3_sem_exam: parseInt(values[12]) || 0,
+            subject3_ia_exam: parseInt(values[13]) || 0,
+            subject3_term_marks: parseInt(values[14]) || 0,
+            subject3_viva_marks: parseInt(values[15]) || 0,
+            subject4_sem_exam: parseInt(values[16]) || 0,
+            subject4_ia_exam: parseInt(values[17]) || 0,
+            subject4_term_marks: parseInt(values[18]) || 0,
+            subject4_viva_marks: parseInt(values[19]) || 0,
+            subject5_sem_exam: parseInt(values[20]) || 0,
+            subject5_ia_exam: parseInt(values[21]) || 0,
+            subject5_term_marks: parseInt(values[22]) || 0,
+            subject5_viva_marks: parseInt(values[23]) || 0,
+            total_cgpa: parseFloat(values[24]) || 0,
           };
           
           const studentErrors = validateStudent(student, index);
@@ -177,13 +199,23 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
     reader.readAsText(file);
   };
 
+  const calculateTotal = (student: StudentData) => {
+    let total = 0;
+    for (let i = 1; i <= 5; i++) {
+      total += student[`subject${i}_sem_exam` as keyof StudentData] as number;
+      total += student[`subject${i}_ia_exam` as keyof StudentData] as number;
+      total += student[`subject${i}_term_marks` as keyof StudentData] as number;
+      total += student[`subject${i}_viva_marks` as keyof StudentData] as number;
+    }
+    return total;
+  };
+
   const handleFinalUpload = async () => {
     if (parsedData.length === 0) return;
     
     setLoading(true);
     
     try {
-      // Check for duplicate seat numbers in database
       const { data: existingStudents } = await supabase
         .from('students')
         .select('seat_number')
@@ -199,7 +231,6 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
           variant: "destructive",
         });
         
-        // Filter out duplicates
         const uniqueStudents = parsedData.filter(s => !existingSeatNumbers.has(s.seat_number));
         
         if (uniqueStudents.length === 0) {
@@ -212,7 +243,6 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
           return;
         }
         
-        // Insert only unique students
         const { error } = await supabase
           .from('students')
           .insert(uniqueStudents.map(student => ({
@@ -230,7 +260,6 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
           description: `${uniqueStudents.length} new students uploaded (${duplicateCount} duplicates skipped)`,
         });
       } else {
-        // Insert all students
         const { error } = await supabase
           .from('students')
           .insert(parsedData.map(student => ({
@@ -281,7 +310,7 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
             Bulk Upload Students
           </DialogTitle>
           <DialogDescription>
-            Upload Excel/CSV file to add multiple students at once
+            Upload CSV file to add multiple students at once. Each subject has 4 mark sections: Sem Exam (80), IA Exam (20), Term Marks (100), Viva (25).
           </DialogDescription>
         </DialogHeader>
         
@@ -291,7 +320,7 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
               <Label>Upload CSV File</Label>
               <Input
                 type="file"
-                accept=".csv,.xlsx,.xls"
+                accept=".csv"
                 onChange={handleFileUpload}
               />
             </div>
@@ -392,13 +421,7 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
                           <TableCell>
                             <Badge variant="outline">{student.total_cgpa}</Badge>
                           </TableCell>
-                          <TableCell>
-                            {student.subject1_unit_test + student.subject1_sem_marks +
-                             student.subject2_unit_test + student.subject2_sem_marks +
-                             student.subject3_unit_test + student.subject3_sem_marks +
-                             student.subject4_unit_test + student.subject4_sem_marks +
-                             student.subject5_unit_test + student.subject5_sem_marks}/550
-                          </TableCell>
+                          <TableCell>{calculateTotal(student)}/1125</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
