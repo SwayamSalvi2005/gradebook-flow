@@ -83,94 +83,85 @@ export type Database = {
       students: {
         Row: {
           academic_database_id: string
+          algo_ia: number | null
+          algo_se: number | null
+          algo_total: number | null
           created_at: string
+          dbms_ia: number | null
+          dbms_se: number | null
+          dbms_total: number | null
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
+          math_iv_ia: number | null
+          math_iv_se: number | null
+          math_iv_total: number | null
+          math_iv_tw: number | null
+          micro_ia: number | null
+          micro_se: number | null
+          micro_total: number | null
+          os_ia: number | null
+          os_se: number | null
+          os_total: number | null
+          result: string | null
           roll_no: string | null
           seat_number: number
           student_name: string
-          subject1_ia_exam: number | null
-          subject1_sem_exam: number | null
-          subject1_term_marks: number | null
-          subject1_viva_marks: number | null
-          subject2_ia_exam: number | null
-          subject2_sem_exam: number | null
-          subject2_term_marks: number | null
-          subject2_viva_marks: number | null
-          subject3_ia_exam: number | null
-          subject3_sem_exam: number | null
-          subject3_term_marks: number | null
-          subject3_viva_marks: number | null
-          subject4_ia_exam: number | null
-          subject4_sem_exam: number | null
-          subject4_term_marks: number | null
-          subject4_viva_marks: number | null
-          subject5_ia_exam: number | null
-          subject5_sem_exam: number | null
-          subject5_term_marks: number | null
-          subject5_viva_marks: number | null
           total_cgpa: number | null
           updated_at: string
         }
         Insert: {
           academic_database_id: string
+          algo_ia?: number | null
+          algo_se?: number | null
+          algo_total?: number | null
           created_at?: string
+          dbms_ia?: number | null
+          dbms_se?: number | null
+          dbms_total?: number | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          math_iv_ia?: number | null
+          math_iv_se?: number | null
+          math_iv_total?: number | null
+          math_iv_tw?: number | null
+          micro_ia?: number | null
+          micro_se?: number | null
+          micro_total?: number | null
+          os_ia?: number | null
+          os_se?: number | null
+          os_total?: number | null
+          result?: string | null
           roll_no?: string | null
           seat_number: number
           student_name: string
-          subject1_ia_exam?: number | null
-          subject1_sem_exam?: number | null
-          subject1_term_marks?: number | null
-          subject1_viva_marks?: number | null
-          subject2_ia_exam?: number | null
-          subject2_sem_exam?: number | null
-          subject2_term_marks?: number | null
-          subject2_viva_marks?: number | null
-          subject3_ia_exam?: number | null
-          subject3_sem_exam?: number | null
-          subject3_term_marks?: number | null
-          subject3_viva_marks?: number | null
-          subject4_ia_exam?: number | null
-          subject4_sem_exam?: number | null
-          subject4_term_marks?: number | null
-          subject4_viva_marks?: number | null
-          subject5_ia_exam?: number | null
-          subject5_sem_exam?: number | null
-          subject5_term_marks?: number | null
-          subject5_viva_marks?: number | null
           total_cgpa?: number | null
           updated_at?: string
         }
         Update: {
           academic_database_id?: string
+          algo_ia?: number | null
+          algo_se?: number | null
+          algo_total?: number | null
           created_at?: string
+          dbms_ia?: number | null
+          dbms_se?: number | null
+          dbms_total?: number | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          math_iv_ia?: number | null
+          math_iv_se?: number | null
+          math_iv_total?: number | null
+          math_iv_tw?: number | null
+          micro_ia?: number | null
+          micro_se?: number | null
+          micro_total?: number | null
+          os_ia?: number | null
+          os_se?: number | null
+          os_total?: number | null
+          result?: string | null
           roll_no?: string | null
           seat_number?: number
           student_name?: string
-          subject1_ia_exam?: number | null
-          subject1_sem_exam?: number | null
-          subject1_term_marks?: number | null
-          subject1_viva_marks?: number | null
-          subject2_ia_exam?: number | null
-          subject2_sem_exam?: number | null
-          subject2_term_marks?: number | null
-          subject2_viva_marks?: number | null
-          subject3_ia_exam?: number | null
-          subject3_sem_exam?: number | null
-          subject3_term_marks?: number | null
-          subject3_viva_marks?: number | null
-          subject4_ia_exam?: number | null
-          subject4_sem_exam?: number | null
-          subject4_term_marks?: number | null
-          subject4_viva_marks?: number | null
-          subject5_ia_exam?: number | null
-          subject5_sem_exam?: number | null
-          subject5_term_marks?: number | null
-          subject5_viva_marks?: number | null
           total_cgpa?: number | null
           updated_at?: string
         }

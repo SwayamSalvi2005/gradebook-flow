@@ -17,26 +17,23 @@ interface StudentData {
   roll_no: string;
   student_name: string;
   gender?: string;
-  subject1_sem_exam: number;
-  subject1_ia_exam: number;
-  subject1_term_marks: number;
-  subject1_viva_marks: number;
-  subject2_sem_exam: number;
-  subject2_ia_exam: number;
-  subject2_term_marks: number;
-  subject2_viva_marks: number;
-  subject3_sem_exam: number;
-  subject3_ia_exam: number;
-  subject3_term_marks: number;
-  subject3_viva_marks: number;
-  subject4_sem_exam: number;
-  subject4_ia_exam: number;
-  subject4_term_marks: number;
-  subject4_viva_marks: number;
-  subject5_sem_exam: number;
-  subject5_ia_exam: number;
-  subject5_term_marks: number;
-  subject5_viva_marks: number;
+  math_iv_se: number;
+  math_iv_ia: number;
+  math_iv_total: number;
+  math_iv_tw: number;
+  algo_se: number;
+  algo_ia: number;
+  algo_total: number;
+  dbms_se: number;
+  dbms_ia: number;
+  dbms_total: number;
+  os_se: number;
+  os_ia: number;
+  os_total: number;
+  micro_se: number;
+  micro_ia: number;
+  micro_total: number;
+  result: string;
   total_cgpa: number;
 }
 
@@ -54,9 +51,9 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
   const [showPreview, setShowPreview] = useState(false);
 
   const downloadTemplate = () => {
-    const csvContent = `Seat Number,Roll No,Student Name,Gender,S1_SemExam,S1_IAExam,S1_TermMarks,S1_Viva,S2_SemExam,S2_IAExam,S2_TermMarks,S2_Viva,S3_SemExam,S3_IAExam,S3_TermMarks,S3_Viva,S4_SemExam,S4_IAExam,S4_TermMarks,S4_Viva,S5_SemExam,S5_IAExam,S5_TermMarks,S5_Viva,Total_CGPA
-123456,01,John Doe,Male,70,18,85,20,65,17,80,22,72,19,88,21,68,16,82,20,75,18,90,23,8.75
-123457,02,Jane Smith,Female,75,19,90,23,70,18,85,21,68,17,82,20,72,19,88,22,78,20,92,24,9.12`;
+    const csvContent = `Sr,Seat No,Student Name,M/F,Math IV (SE),Math IV (IA),Math IV (Total),Math IV (TW),Algo (SE),Algo (IA),Algo (Total),DBMS (SE),DBMS (IA),DBMS (Total),OS (SE),OS (IA),OS (Total),Micro (SE),Micro (IA),Micro (Total),Result P/F,Pointer
+1,154201,ACHAREKAR ROHAN PRASAD,M,52,13,65,20,45,16,61,40,13,53,32,11,43,50,11,61,P,7.46
+2,154202,ADEKAR NITESH GORAKHNATH,M,71,18,89,23,64,18,82,69,20,89,53,17,70,68,16,84,P,9.45`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -74,37 +71,37 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
       errors.push(`Row ${index + 2}: Seat number must be exactly 6 digits`);
     }
     
-    if (student.roll_no && (student.roll_no > 199 || student.roll_no.toString().length > 2)) {
-      errors.push(`Row ${index + 2}: Roll number must be under 200 and max 2 digits`);
-    }
-    
     if (!student.student_name || student.student_name.trim().length === 0) {
       errors.push(`Row ${index + 2}: Student name is required`);
     }
     
-    // Validate marks for each subject
-    [1, 2, 3, 4, 5].forEach(num => {
-      const semExam = student[`subject${num}_sem_exam`];
-      const iaExam = student[`subject${num}_ia_exam`];
-      const termMarks = student[`subject${num}_term_marks`];
-      const vivaMarks = student[`subject${num}_viva_marks`];
+    // Validate Math IV marks (has TW)
+    if (student.math_iv_se < 0 || student.math_iv_se > 80) {
+      errors.push(`Row ${index + 2}: Math IV SE must be between 0-80`);
+    }
+    if (student.math_iv_ia < 0 || student.math_iv_ia > 20) {
+      errors.push(`Row ${index + 2}: Math IV IA must be between 0-20`);
+    }
+    if (student.math_iv_tw < 0 || student.math_iv_tw > 25) {
+      errors.push(`Row ${index + 2}: Math IV TW must be between 0-25`);
+    }
+    
+    // Validate other subjects
+    const subjects = ['algo', 'dbms', 'os', 'micro'];
+    subjects.forEach(subj => {
+      const se = student[`${subj}_se`];
+      const ia = student[`${subj}_ia`];
       
-      if (semExam < 0 || semExam > 80) {
-        errors.push(`Row ${index + 2}: Subject ${num} Sem Exam must be between 0-80`);
+      if (se < 0 || se > 80) {
+        errors.push(`Row ${index + 2}: ${subj.toUpperCase()} SE must be between 0-80`);
       }
-      if (iaExam < 0 || iaExam > 20) {
-        errors.push(`Row ${index + 2}: Subject ${num} IA Exam must be between 0-20`);
-      }
-      if (termMarks < 0 || termMarks > 100) {
-        errors.push(`Row ${index + 2}: Subject ${num} Term Marks must be between 0-100`);
-      }
-      if (vivaMarks < 0 || vivaMarks > 25) {
-        errors.push(`Row ${index + 2}: Subject ${num} Viva Marks must be between 0-25`);
+      if (ia < 0 || ia > 20) {
+        errors.push(`Row ${index + 2}: ${subj.toUpperCase()} IA must be between 0-20`);
       }
     });
     
     if (student.total_cgpa < 0 || student.total_cgpa > 10) {
-      errors.push(`Row ${index + 2}: CGPA must be between 0-10`);
+      errors.push(`Row ${index + 2}: Pointer must be between 0-10`);
     }
     
     return errors;
@@ -126,13 +123,13 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
       
       const headers = lines[0].split(',').map(h => h.trim());
       const expectedHeaders = [
-        'Seat Number', 'Roll No', 'Student Name', 'Gender',
-        'S1_SemExam', 'S1_IAExam', 'S1_TermMarks', 'S1_Viva',
-        'S2_SemExam', 'S2_IAExam', 'S2_TermMarks', 'S2_Viva',
-        'S3_SemExam', 'S3_IAExam', 'S3_TermMarks', 'S3_Viva',
-        'S4_SemExam', 'S4_IAExam', 'S4_TermMarks', 'S4_Viva',
-        'S5_SemExam', 'S5_IAExam', 'S5_TermMarks', 'S5_Viva',
-        'Total_CGPA'
+        'Sr', 'Seat No', 'Student Name', 'M/F',
+        'Math IV (SE)', 'Math IV (IA)', 'Math IV (Total)', 'Math IV (TW)',
+        'Algo (SE)', 'Algo (IA)', 'Algo (Total)',
+        'DBMS (SE)', 'DBMS (IA)', 'DBMS (Total)',
+        'OS (SE)', 'OS (IA)', 'OS (Total)',
+        'Micro (SE)', 'Micro (IA)', 'Micro (Total)',
+        'Result P/F', 'Pointer'
       ];
       
       const headerErrors: string[] = [];
@@ -155,31 +152,28 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
           const values = line.split(',').map(v => v.trim());
           
           const student = {
-            seat_number: parseInt(values[0]) || 0,
-            roll_no: values[1] || '',
+            seat_number: parseInt(values[1]) || 0,
+            roll_no: values[0] || '',
             student_name: values[2] || '',
-            gender: values[3] || undefined,
-            subject1_sem_exam: parseInt(values[4]) || 0,
-            subject1_ia_exam: parseInt(values[5]) || 0,
-            subject1_term_marks: parseInt(values[6]) || 0,
-            subject1_viva_marks: parseInt(values[7]) || 0,
-            subject2_sem_exam: parseInt(values[8]) || 0,
-            subject2_ia_exam: parseInt(values[9]) || 0,
-            subject2_term_marks: parseInt(values[10]) || 0,
-            subject2_viva_marks: parseInt(values[11]) || 0,
-            subject3_sem_exam: parseInt(values[12]) || 0,
-            subject3_ia_exam: parseInt(values[13]) || 0,
-            subject3_term_marks: parseInt(values[14]) || 0,
-            subject3_viva_marks: parseInt(values[15]) || 0,
-            subject4_sem_exam: parseInt(values[16]) || 0,
-            subject4_ia_exam: parseInt(values[17]) || 0,
-            subject4_term_marks: parseInt(values[18]) || 0,
-            subject4_viva_marks: parseInt(values[19]) || 0,
-            subject5_sem_exam: parseInt(values[20]) || 0,
-            subject5_ia_exam: parseInt(values[21]) || 0,
-            subject5_term_marks: parseInt(values[22]) || 0,
-            subject5_viva_marks: parseInt(values[23]) || 0,
-            total_cgpa: parseFloat(values[24]) || 0,
+            gender: values[3] === 'M' ? 'Male' : values[3] === 'F' ? 'Female' : undefined,
+            math_iv_se: parseInt(values[4]) || 0,
+            math_iv_ia: parseInt(values[5]) || 0,
+            math_iv_total: parseInt(values[6]) || 0,
+            math_iv_tw: parseInt(values[7]) || 0,
+            algo_se: parseInt(values[8]) || 0,
+            algo_ia: parseInt(values[9]) || 0,
+            algo_total: parseInt(values[10]) || 0,
+            dbms_se: parseInt(values[11]) || 0,
+            dbms_ia: parseInt(values[12]) || 0,
+            dbms_total: parseInt(values[13]) || 0,
+            os_se: parseInt(values[14]) || 0,
+            os_ia: parseInt(values[15]) || 0,
+            os_total: parseInt(values[16]) || 0,
+            micro_se: parseInt(values[17]) || 0,
+            micro_ia: parseInt(values[18]) || 0,
+            micro_total: parseInt(values[19]) || 0,
+            result: values[20] || 'P',
+            total_cgpa: parseFloat(values[21]) || 0,
           };
           
           const studentErrors = validateStudent(student, index);
@@ -197,17 +191,6 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
     };
 
     reader.readAsText(file);
-  };
-
-  const calculateTotal = (student: StudentData) => {
-    let total = 0;
-    for (let i = 1; i <= 5; i++) {
-      total += student[`subject${i}_sem_exam` as keyof StudentData] as number;
-      total += student[`subject${i}_ia_exam` as keyof StudentData] as number;
-      total += student[`subject${i}_term_marks` as keyof StudentData] as number;
-      total += student[`subject${i}_viva_marks` as keyof StudentData] as number;
-    }
-    return total;
   };
 
   const handleFinalUpload = async () => {
@@ -310,7 +293,7 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
             Bulk Upload Students
           </DialogTitle>
           <DialogDescription>
-            Upload CSV file to add multiple students at once. Each subject has 4 mark sections: Sem Exam (80), IA Exam (20), Term Marks (100), Viva (25).
+            Upload CSV file matching the Excel format: Math IV (SE, IA, Total, TW), Algo, DBMS, OS, Micro (SE, IA, Total each).
           </DialogDescription>
         </DialogHeader>
         
@@ -404,24 +387,26 @@ export const BulkUploadPreview = ({ databaseId, onUploadComplete, open, onOpenCh
                     <TableHeader>
                       <TableRow>
                         <TableHead>Seat No</TableHead>
-                        <TableHead>Roll No</TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Gender</TableHead>
-                        <TableHead>CGPA</TableHead>
-                        <TableHead>Total Marks</TableHead>
+                        <TableHead>M/F</TableHead>
+                        <TableHead>Result</TableHead>
+                        <TableHead>Pointer</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parsedData.slice(0, 10).map((student, index) => (
                         <TableRow key={index}>
                           <TableCell>{student.seat_number}</TableCell>
-                          <TableCell>{student.roll_no}</TableCell>
                           <TableCell>{student.student_name}</TableCell>
-                          <TableCell>{student.gender || 'N/A'}</TableCell>
+                          <TableCell>{student.gender === 'Male' ? 'M' : student.gender === 'Female' ? 'F' : 'N/A'}</TableCell>
+                          <TableCell>
+                            <Badge variant={student.result === 'P' ? 'default' : 'destructive'}>
+                              {student.result}
+                            </Badge>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline">{student.total_cgpa}</Badge>
                           </TableCell>
-                          <TableCell>{calculateTotal(student)}/1125</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

@@ -16,26 +16,23 @@ interface Student {
   roll_no?: string;
   student_name: string;
   gender?: string;
-  subject1_sem_exam: number;
-  subject1_ia_exam: number;
-  subject1_term_marks: number;
-  subject1_viva_marks: number;
-  subject2_sem_exam: number;
-  subject2_ia_exam: number;
-  subject2_term_marks: number;
-  subject2_viva_marks: number;
-  subject3_sem_exam: number;
-  subject3_ia_exam: number;
-  subject3_term_marks: number;
-  subject3_viva_marks: number;
-  subject4_sem_exam: number;
-  subject4_ia_exam: number;
-  subject4_term_marks: number;
-  subject4_viva_marks: number;
-  subject5_sem_exam: number;
-  subject5_ia_exam: number;
-  subject5_term_marks: number;
-  subject5_viva_marks: number;
+  math_iv_se: number;
+  math_iv_ia: number;
+  math_iv_total: number;
+  math_iv_tw: number;
+  algo_se: number;
+  algo_ia: number;
+  algo_total: number;
+  dbms_se: number;
+  dbms_ia: number;
+  dbms_total: number;
+  os_se: number;
+  os_ia: number;
+  os_total: number;
+  micro_se: number;
+  micro_ia: number;
+  micro_total: number;
+  result: string;
   total_cgpa: number;
 }
 
@@ -101,7 +98,7 @@ const ManageStudents = () => {
         variant: "destructive",
       });
     } else {
-      setStudents(data || []);
+      setStudents(data as Student[] || []);
     }
   };
 
