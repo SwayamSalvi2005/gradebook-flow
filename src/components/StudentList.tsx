@@ -13,26 +13,23 @@ interface Student {
   roll_no?: string;
   student_name: string;
   gender?: string;
-  subject1_sem_exam: number;
-  subject1_ia_exam: number;
-  subject1_term_marks: number;
-  subject1_viva_marks: number;
-  subject2_sem_exam: number;
-  subject2_ia_exam: number;
-  subject2_term_marks: number;
-  subject2_viva_marks: number;
-  subject3_sem_exam: number;
-  subject3_ia_exam: number;
-  subject3_term_marks: number;
-  subject3_viva_marks: number;
-  subject4_sem_exam: number;
-  subject4_ia_exam: number;
-  subject4_term_marks: number;
-  subject4_viva_marks: number;
-  subject5_sem_exam: number;
-  subject5_ia_exam: number;
-  subject5_term_marks: number;
-  subject5_viva_marks: number;
+  math_iv_se: number;
+  math_iv_ia: number;
+  math_iv_total: number;
+  math_iv_tw: number;
+  algo_se: number;
+  algo_ia: number;
+  algo_total: number;
+  dbms_se: number;
+  dbms_ia: number;
+  dbms_total: number;
+  os_se: number;
+  os_ia: number;
+  os_total: number;
+  micro_se: number;
+  micro_ia: number;
+  micro_total: number;
+  result: string;
   total_cgpa: number;
 }
 
@@ -42,30 +39,20 @@ interface StudentListProps {
   onDeleteStudent: (studentId: string) => void;
 }
 
+const subjects = [
+  { key: 'math_iv', name: 'Math IV', hasTW: true },
+  { key: 'algo', name: 'Algo', hasTW: false },
+  { key: 'dbms', name: 'DBMS', hasTW: false },
+  { key: 'os', name: 'OS', hasTW: false },
+  { key: 'micro', name: 'Micro', hasTW: false },
+];
+
 export const StudentList = ({ students, onEditStudent, onDeleteStudent }: StudentListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [genderFilter, setGenderFilter] = useState('all');
+  const [resultFilter, setResultFilter] = useState('all');
   const [sortBy, setSortBy] = useState('roll_no');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-
-  const calculateTotal = (student: Student) => {
-    let total = 0;
-    for (let i = 1; i <= 5; i++) {
-      total += Number(student[`subject${i}_sem_exam` as keyof Student]) || 0;
-      total += Number(student[`subject${i}_ia_exam` as keyof Student]) || 0;
-      total += Number(student[`subject${i}_term_marks` as keyof Student]) || 0;
-      total += Number(student[`subject${i}_viva_marks` as keyof Student]) || 0;
-    }
-    return total;
-  };
-
-  const calculateSubjectTotal = (student: Student, num: number) => {
-    const semExam = Number(student[`subject${num}_sem_exam` as keyof Student]) || 0;
-    const iaExam = Number(student[`subject${num}_ia_exam` as keyof Student]) || 0;
-    const termMarks = Number(student[`subject${num}_term_marks` as keyof Student]) || 0;
-    const vivaMarks = Number(student[`subject${num}_viva_marks` as keyof Student]) || 0;
-    return semExam + iaExam + termMarks + vivaMarks;
-  };
 
   const filteredAndSortedStudents = useMemo(() => {
     let filtered = students.filter(student => {
@@ -78,8 +65,12 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
         (genderFilter === 'male' && student.gender === 'Male') ||
         (genderFilter === 'female' && student.gender === 'Female') ||
         (genderFilter === 'other' && student.gender === 'Other');
+
+      const matchesResult = resultFilter === 'all' ||
+        (resultFilter === 'pass' && student.result === 'P') ||
+        (resultFilter === 'fail' && student.result === 'F');
       
-      return matchesSearch && matchesGender;
+      return matchesSearch && matchesGender && matchesResult;
     });
 
     filtered.sort((a, b) => {
@@ -100,7 +91,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
     });
 
     return filtered;
-  }, [students, searchTerm, genderFilter, sortBy]);
+  }, [students, searchTerm, genderFilter, resultFilter, sortBy]);
 
   return (
     <>
@@ -110,7 +101,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name, seat number, or roll number..."
+              placeholder="Search by name, seat number..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -119,15 +110,25 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
           
           <div className="flex gap-2">
             <Select value={genderFilter} onValueChange={setGenderFilter}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[120px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Genders</SelectItem>
-                <SelectItem value="male">Male Only</SelectItem>
-                <SelectItem value="female">Female Only</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="all">All M/F</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={resultFilter} onValueChange={setResultFilter}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Results</SelectItem>
+                <SelectItem value="pass">Pass</SelectItem>
+                <SelectItem value="fail">Fail</SelectItem>
               </SelectContent>
             </Select>
             
@@ -136,10 +137,10 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="roll_no">Sort by Roll No</SelectItem>
+                <SelectItem value="roll_no">Sort by Sr</SelectItem>
                 <SelectItem value="name">Sort by Name</SelectItem>
-                <SelectItem value="cgpa">Sort by CGPA</SelectItem>
-                <SelectItem value="seat_number">Sort by Seat No</SelectItem>
+                <SelectItem value="cgpa">Sort by Pointer</SelectItem>
+                <SelectItem value="seat_number">Sort by Seat</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -153,8 +154,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="h-4 w-4" />
             {genderFilter === 'all' ? 'All Students' : 
-             genderFilter === 'male' ? 'Male Students' :
-             genderFilter === 'female' ? 'Female Students' : 'Other Gender'}
+             genderFilter === 'male' ? 'Male' : 'Female'}
           </div>
         </div>
 
@@ -170,7 +170,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium truncate">{student.student_name}</span>
+                    <span className="font-medium truncate text-sm">{student.student_name}</span>
                   </div>
                   <div className="flex space-x-1">
                     <Button
@@ -195,28 +195,26 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                     </Button>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Roll No:</span>
-                    <Badge variant="outline">{student.roll_no || 'N/A'}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Seat No:</span>
+                    <span className="text-muted-foreground">Seat No:</span>
                     <Badge variant="secondary">{student.seat_number}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Gender:</span>
-                    <span className="text-sm">{student.gender || 'N/A'}</span>
+                    <span className="text-muted-foreground">M/F:</span>
+                    <span>{student.gender === 'Male' ? 'M' : student.gender === 'Female' ? 'F' : 'N/A'}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">CGPA:</span>
-                    <Badge className="bg-primary text-primary-foreground">
-                      {student.total_cgpa.toFixed(2)}
+                    <span className="text-muted-foreground">Result:</span>
+                    <Badge variant={student.result === 'P' ? 'default' : 'destructive'}>
+                      {student.result === 'P' ? 'Pass' : 'Fail'}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total:</span>
-                    <span className="text-sm font-medium">{calculateTotal(student)}/1125</span>
+                    <span className="text-muted-foreground">Pointer:</span>
+                    <Badge className="bg-primary text-primary-foreground">
+                      {student.total_cgpa?.toFixed(2) || '0.00'}
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -230,7 +228,7 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
               <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No students found</h3>
               <p className="text-muted-foreground">
-                {searchTerm || genderFilter !== 'all' 
+                {searchTerm || genderFilter !== 'all' || resultFilter !== 'all'
                   ? 'Try adjusting your search or filter criteria' 
                   : 'Add students to get started'}
               </p>
@@ -260,16 +258,18 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                   <h4 className="font-semibold">Student Information</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Roll Number:</span>
-                      <span>{selectedStudent.roll_no || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Seat Number:</span>
                       <span>{selectedStudent.seat_number}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Gender:</span>
-                      <span>{selectedStudent.gender || 'N/A'}</span>
+                      <span>{selectedStudent.gender === 'Male' ? 'M' : selectedStudent.gender === 'Female' ? 'F' : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Result:</span>
+                      <Badge variant={selectedStudent.result === 'P' ? 'default' : 'destructive'}>
+                        {selectedStudent.result === 'P' ? 'Pass' : 'Fail'}
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -278,16 +278,8 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
                   <h4 className="font-semibold">Performance Summary</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">CGPA:</span>
-                      <Badge className="bg-primary">{selectedStudent.total_cgpa.toFixed(2)}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Marks:</span>
-                      <span>{calculateTotal(selectedStudent)}/1125</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Percentage:</span>
-                      <span>{((calculateTotal(selectedStudent) / 1125) * 100).toFixed(1)}%</span>
+                      <span className="text-muted-foreground">Pointer:</span>
+                      <Badge className="bg-primary">{selectedStudent.total_cgpa?.toFixed(2) || '0.00'}</Badge>
                     </div>
                   </div>
                 </div>
@@ -297,31 +289,33 @@ export const StudentList = ({ students, onEditStudent, onDeleteStudent }: Studen
               <div>
                 <h4 className="font-semibold mb-3">Subject-wise Marks</h4>
                 <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <div key={num} className="border rounded-lg p-3">
+                  {subjects.map((subject) => (
+                    <div key={subject.key} className="border rounded-lg p-3">
                       <div className="flex justify-between items-center mb-2">
-                        <h5 className="font-medium">Subject {num}</h5>
+                        <h5 className="font-medium">{subject.name}</h5>
                         <Badge variant="outline">
-                          {calculateSubjectTotal(selectedStudent, num)}/225
+                          Total: {selectedStudent[`${subject.key}_total` as keyof Student]}/100
                         </Badge>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className={`grid ${subject.hasTW ? 'grid-cols-4' : 'grid-cols-3'} gap-4 text-sm`}>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Sem Exam:</span>
-                          <span>{selectedStudent[`subject${num}_sem_exam` as keyof Student]}/80</span>
+                          <span className="text-muted-foreground">SE:</span>
+                          <span>{selectedStudent[`${subject.key}_se` as keyof Student]}/80</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">IA Exam:</span>
-                          <span>{selectedStudent[`subject${num}_ia_exam` as keyof Student]}/20</span>
+                          <span className="text-muted-foreground">IA:</span>
+                          <span>{selectedStudent[`${subject.key}_ia` as keyof Student]}/20</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Term Marks:</span>
-                          <span>{selectedStudent[`subject${num}_term_marks` as keyof Student]}/100</span>
+                          <span className="text-muted-foreground">Total:</span>
+                          <span>{selectedStudent[`${subject.key}_total` as keyof Student]}/100</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Viva:</span>
-                          <span>{selectedStudent[`subject${num}_viva_marks` as keyof Student]}/25</span>
-                        </div>
+                        {subject.hasTW && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">TW:</span>
+                            <span>{selectedStudent.math_iv_tw}/25</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
